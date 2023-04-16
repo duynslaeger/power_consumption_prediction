@@ -30,9 +30,9 @@ class Network(object):
 		self.biases = np.empty()
 		pass
 
-	def feed_forward(self, layer_index, , activation_fct):
+	def forward_propagation(self, layer_index, , activation_fct):
 		"""
-		Performs the feeding from a layer to the next one.
+		Performs the propagation from a layer to the next one.
 		Returns : a vector containing the activation values of 
 				  each neurons within the layer at whose index is layer_index+1
 		Arguments :

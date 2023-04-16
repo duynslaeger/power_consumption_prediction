@@ -25,9 +25,9 @@ class Network(object):
 		self.next = None
 		
 
-	def feed_forward(self, A, , activation_fct):
+	def forward_propagation(self, A, , activation_fct):
 		"""
-		Performs the feeding from the current layer to the next one.
+		Performs the propagation from the current layer to the next one.
 		Returns : a vector containing the activation values of 
 				  each neurons within the next layer
 		Arguments :
