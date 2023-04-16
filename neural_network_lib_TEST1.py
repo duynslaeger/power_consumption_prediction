@@ -18,9 +18,9 @@ class Network(object):
 		"""
 		-self.layers is a list containing the layers of the network. A layer is a vector containing the activation values of the layer
 		-self.weights is a list of the weights linking two layers. "weights" are matrices. For example, the matrice found at index 0
-			of self.weights join the first and second layer, etc. The format of matrix is used to perform the feed_forward action
+			of self.weights join the Oth and 1st layer, etc. The format of matrix is used to perform the feed_forward action
 		-self.biases is a list of the biases linking two layers. "biases" are vector containing the values of all the biases. For example, the 
-			vector found at index 0 of self.biases joint the first and second layer, etc.
+			vector found at index 0 of self.biases joint the 0th and 1st layer, etc.
 		"""
 
 

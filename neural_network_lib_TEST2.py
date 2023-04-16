@@ -49,7 +49,7 @@ class Network(object):
 
 	def add(self, layer):
 		"""
-		-layer is an object from the class Network
+		-layer is an object from the Network class 
 		"""
 		self.next = layer
 		
