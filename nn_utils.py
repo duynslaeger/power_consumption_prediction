@@ -30,7 +30,7 @@ def remove_extremes(df):
 
 def ReLU(X):
 	"""
-	Apply the Reactivation Linear Unit on a matrix. Basically, it applies max(0,x_i_j) to all element of the matrix X
+	Apply the Rectified Linear Unit on a matrix. Basically, it applies max(0,x_i_j) to all element of the matrix X
 		-X is a numpy matrix
 	"""
 	return X*(X>0)
