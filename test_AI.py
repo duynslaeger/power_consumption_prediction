@@ -259,8 +259,6 @@ import matplotlib.pyplot as plt
 # Generate some data - a sine wave
 
 dataset = pd.read_csv('CDB005_15min.csv', usecols=['ts', 'p_cons'], index_col='ts', parse_dates=['ts'])
-t = np.linspace(0, 20, 200)
-x = np.cos(t) 
 
 # Set up the input and target data for the LSTM
 sequence_length = 1
