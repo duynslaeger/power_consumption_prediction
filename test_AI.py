@@ -253,24 +253,28 @@ class LSTM:
                                          self.db_gates["input"], self.db_gates["output"], self.db_gates["forget"], 
                                          self.dW_candidate, self.db_candidate])
 
+#You need to choose the sequence size which should be the same as the input size.
+sequence_length = 1
+#You also need to choose the prediction size which should be the same as the hidden size.
+predict_size = 1
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Generate some data - a sine wave
+# Took a data 
 
 dataset = pd.read_csv('CDB005_15min.csv', usecols=['ts', 'p_cons'], index_col='ts', parse_dates=['ts'])
 
 # Set up the input and target data for the LSTM
-sequence_length = 1
 
 # Add p_cons data to input_data
 input_data = []
 target_data = []
-for i in range(len(dataset) - sequence_length - 1):
+for i in range(len(dataset) - sequence_length - predict_size):
     input_data.append(np.array([dataset['p_cons'][i:i+sequence_length]]))
-    target_data.append(dataset['p_cons'][i+sequence_length])
+    target_data.append(dataset['p_cons'][i+sequence_length : i+sequence_length + predict_size])
 input_data = np.array(input_data).reshape(len(input_data), sequence_length, 1)
-target_data = np.array(target_data).reshape(len(target_data), 1)
+target_data = np.array(target_data).reshape(len(target_data), predict_size, 1)
 
 # Normalize the data using min-max normalization
 input_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
@@ -285,9 +289,43 @@ target_train = target_data[:num_training_samples]
 input_test = input_data[num_training_samples:]
 target_test = target_data[num_training_samples:]
 
+import matplotlib.pyplot as plt
+
+# Define the size of the figure
+fig, axs = plt.subplots(3, 2, figsize=(12, 12))
+axs = axs.ravel()
+
+# Plot input data
+axs[0].plot(input_data.flatten())
+axs[0].set_title('Input data')
+
+# Plot target data
+axs[1].plot(target_data.flatten())
+axs[1].set_title('Target data')
+
+# Plot input train
+axs[2].plot(input_train.flatten())
+axs[2].set_title('Input train')
+
+# Plot target train
+axs[3].plot(target_train.flatten())
+axs[3].set_title('Target train')
+
+# Plot input test
+axs[4].plot(input_test.flatten())
+axs[4].set_title('Input test')
+
+# Plot target test
+axs[5].plot(target_test.flatten())
+axs[5].set_title('Target test')
+
+# Show the plot
+plt.tight_layout()
+plt.show()
+
 
 # Set up the LSTM
-lstm = LSTM(input_size=1, hidden_size=1, output_size=1)
+lstm = LSTM(input_size=sequence_length, hidden_size=predict_size, output_size=10)
 
 # Train the LSTM
 num_epochs = 100
@@ -317,11 +355,10 @@ for epoch in range(num_epochs):
         print("Epoch", epoch, "Loss", loss)
 
 
-
 # Make predictions on the test set
 predictions = []
-for i in range(len(target_test)):
-    x_t = target_test[i]
+for i in range(len(input_test)):
+    x_t = input_test[i]
     lstm.forward(x_t)
     predictions.append(lstm.h_t)
 
@@ -329,8 +366,7 @@ for i in range(len(target_test)):
 predictions = np.array(predictions).flatten()
 
 # Plot the predictions against the actual values
-plt.plot(target_test, label='Target train')
+plt.plot(target_test.flatten(), label='Target test')
 plt.plot(predictions, label='Predictions on training data')
 plt.legend()
 plt.show()
-
