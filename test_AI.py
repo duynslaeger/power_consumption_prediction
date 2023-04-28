@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
 import numpy as np
+import pandas as pd
+# Set the random seed
+
 
 class AdamOptimizer:
-    def __init__(self, parameters, alpha=0.0001, beta1=0.9, beta2=0.999, epsilon=1e-8):
+    def __init__(self, parameters, alpha=0.00001, beta1=0.9, beta2=0.0999, epsilon=1e-8):
         """
         Initializes the Adam optimizer.
 
@@ -38,7 +42,7 @@ class AdamOptimizer:
             
             parameters[i] -= alpha_t * self.m[i] / (np.sqrt(self.v[i]) + self.epsilon)
 
-
+np.random.seed(10)
 
 class LSTM:
     """
@@ -70,17 +74,20 @@ class LSTM:
 
     """
     
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size, output_size): 
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.output_size = output_size
-            
+        self.output_size = output_size 
+
         # Initialize weights
         self.W_gates = {}
-        self.W_gates["input"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
-        self.W_gates["output"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
-        self.W_gates["forget"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
         
+        self.W_gates["input"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
+
+        self.W_gates["output"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
+
+        self.W_gates["forget"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
+
         self.W_candidate = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
             
         # Initialize biases
@@ -250,16 +257,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Generate some data - a sine wave
+
+dataset = pd.read_csv('CDB005_15min.csv', usecols=['ts', 'p_cons'], index_col='ts', parse_dates=['ts'])
 t = np.linspace(0, 20, 200)
-x = np.sin(t)
+x = np.cos(t) 
 
 # Set up the input and target data for the LSTM
 sequence_length = 1
+
+# Add p_cons data to input_data
 input_data = []
 target_data = []
-for i in range(len(x) - sequence_length - 1):
-    input_data.append(x[i:i+sequence_length])
-    target_data.append(x[i+sequence_length])
+for i in range(len(dataset) - sequence_length - 1):
+    input_data.append(np.array([dataset['p_cons'][i:i+sequence_length]]))
+    target_data.append(dataset['p_cons'][i+sequence_length])
 input_data = np.array(input_data).reshape(len(input_data), sequence_length, 1)
 target_data = np.array(target_data).reshape(len(target_data), 1)
 
@@ -269,7 +280,7 @@ target_data = (target_data - np.min(target_data)) / (np.max(target_data) - np.mi
 
 # Split the data into training and testing sets
 num_samples = len(input_data)
-num_training_samples = int(num_samples * 0.9)
+num_training_samples = int(num_samples * 0.75)
 
 input_train = input_data[:num_training_samples]
 target_train = target_data[:num_training_samples]
@@ -281,8 +292,8 @@ target_test = target_data[num_training_samples:]
 lstm = LSTM(input_size=1, hidden_size=1, output_size=1)
 
 # Train the LSTM
-num_epochs = 500
-learning_rate = 0.00000001
+num_epochs = 100
+learning_rate = 0.0000001
 for epoch in range(num_epochs):
     for i in range(len(input_data)):
         # Get the input and target for this iteration
@@ -308,10 +319,11 @@ for epoch in range(num_epochs):
         print("Epoch", epoch, "Loss", loss)
 
 
+
 # Make predictions on the test set
 predictions = []
-for i in range(len(target_train)):
-    x_t = target_train[i]
+for i in range(len(target_test)):
+    x_t = target_test[i]
     lstm.forward(x_t)
     predictions.append(lstm.h_t)
 
@@ -319,7 +331,8 @@ for i in range(len(target_train)):
 predictions = np.array(predictions).flatten()
 
 # Plot the predictions against the actual values
-plt.plot(target_train, label='Target train')
+plt.plot(target_test, label='Target train')
 plt.plot(predictions, label='Predictions on training data')
 plt.legend()
 plt.show()
+
