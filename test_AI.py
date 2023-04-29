@@ -42,7 +42,6 @@ class AdamOptimizer:
             
             parameters[i] -= alpha_t * self.m[i] / (np.sqrt(self.v[i]) + self.epsilon)
 
-np.random.seed(10)
 
 class LSTM:
     """
@@ -81,13 +80,13 @@ class LSTM:
 
         # Initialize weights
         self.W_gates = {}
-        
+        np.random.seed(10)
         self.W_gates["input"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
-
+        np.random.seed(10)
         self.W_gates["output"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
-
+        np.random.seed(10)
         self.W_gates["forget"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
-
+        np.random.seed(10)
         self.W_candidate = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
             
         # Initialize biases
@@ -235,7 +234,7 @@ class LSTM:
         self.c_t = self.c_t * f_t + c_candidate * i_t
         self.h_t = np.tanh(self.c_t) * o_t
 
-        return dX_t, self.dW_gates, self.dW_candidate, self.db_gates, self.db_candidate
+        return dX_t
 
     def update(self, learning_rate, optimizer=None):
         if optimizer is None:
@@ -262,7 +261,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Took a data 
-
 dataset = pd.read_csv('CDB005_15min.csv', usecols=['ts', 'p_cons'], index_col='ts', parse_dates=['ts'])
 
 # Set up the input and target data for the LSTM
@@ -323,18 +321,17 @@ axs[5].set_title('Target test')
 plt.tight_layout()
 plt.show()
 
-
 # Set up the LSTM
-lstm = LSTM(input_size=sequence_length, hidden_size=predict_size, output_size=10)
+lstm = LSTM(input_size=sequence_length, hidden_size=predict_size, output_size=1)
 
 # Train the LSTM
-num_epochs = 100
+num_epochs = 120
 learning_rate = 0.0000001
 for epoch in range(num_epochs):
-    for i in range(len(input_data)):
+    for i in range(len(input_train)):
         # Get the input and target for this iteration
-        x_t = input_data[i]
-        y_t = target_data[i]
+        x_t = input_train[i]
+        y_t = target_train[i]
         
         # Forward pass
         cache = lstm.forward(x_t)
@@ -353,7 +350,6 @@ for epoch in range(num_epochs):
     # Print the loss every 10 epochs
     if epoch % 10 == 0:
         print("Epoch", epoch, "Loss", loss)
-
 
 # Make predictions on the test set
 predictions = []
