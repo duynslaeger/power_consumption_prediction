@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 # Set the random seed
 
 
@@ -34,7 +35,6 @@ class AdamOptimizer:
             gradients (List[np.ndarray]): A list of numpy arrays representing the gradients of the parameters.
         """
         self.t += 1
-
         alpha_t = self.alpha * np.sqrt(1 - self.beta2 ** self.t) / (1 - self.beta1 ** self.t)
         
         for i in range(len(parameters)):
@@ -42,17 +42,6 @@ class AdamOptimizer:
             self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * gradients[i] ** 2
             
             parameters[i] -= alpha_t * self.m[i] / (np.sqrt(self.v[i]) + self.epsilon)
-
-        # -------- CORRECTION (but gives worse results) : --------
-        # for i in range(len(parameters)):
-        #     self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * gradients[i]
-        #     self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * gradients[i] ** 2
-        #     m_hat = self.m[i] / (1 - (self.beta1 ** self.t))
-        #     v_hat = self.v[i] / (1 - (self.beta2 ** self.t))
-            
-        #     parameters[i] -= self.alpha * m_hat / (np.sqrt(v_hat) + self.epsilon)
-
-        # --------------------------------------------------------
 
 
 class LSTM:
@@ -85,46 +74,48 @@ class LSTM:
 
     """
     
-    def __init__(self, output_size): 
+    def __init__(self, input_size, hidden_size, output_size): 
+        self.input_size = input_size
+        self.hidden_size = hidden_size
         self.output_size = output_size 
 
         # Initialize weights
         self.W_gates = {}
         np.random.seed(10)
-        self.W_gates["input"] = np.random.randn(1, 2)* np.sqrt(2 / 2)
+        self.W_gates["input"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
         np.random.seed(10)
-        self.W_gates["output"] = np.random.randn(1, 2)* np.sqrt(2 / 2)
+        self.W_gates["output"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
         np.random.seed(10)
-        self.W_gates["forget"] = np.random.randn(1, 2)* np.sqrt(2 / 2)
+        self.W_gates["forget"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
         np.random.seed(10)
-        self.W_candidate = np.random.randn(1, 2)* np.sqrt(2 / 2)
+        self.W_candidate = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
             
         # Initialize biases
         self.b_gates = {}
-        self.b_gates["input"] = np.zeros((1, 1)) # PAS LE MEME RESULTAT SI ON MET JUSTE 0.0
-        self.b_gates["output"] = np.zeros((1, 1))
-        self.b_gates["forget"] = np.zeros((1, 1))
+        self.b_gates["input"] = np.zeros((hidden_size, 1))
+        self.b_gates["output"] = np.zeros((hidden_size, 1))
+        self.b_gates["forget"] = np.zeros((hidden_size, 1))
         
-        self.b_candidate = np.zeros((1, 1))
+        self.b_candidate = np.zeros((hidden_size, 1))
             
         # Initialize cell state and hidden state
-        self.c_t = np.zeros((1, 1))
-        self.h_t = np.zeros((1, 1))
+        self.c_t = np.zeros((hidden_size, 1))
+        self.h_t = np.zeros((hidden_size, 1))
             
         # Initialize gradients
         self.dW_gates = {}
-        self.dW_gates["input"] = np.zeros((1, 2))
-        self.dW_gates["output"] = np.zeros((1, 2))
-        self.dW_gates["forget"] = np.zeros((1, 2))
+        self.dW_gates["input"] = np.zeros((hidden_size, input_size + hidden_size))
+        self.dW_gates["output"] = np.zeros((hidden_size, input_size + hidden_size))
+        self.dW_gates["forget"] = np.zeros((hidden_size, input_size + hidden_size))
         
-        self.dW_candidate = np.zeros((1, 2)) # ERREUR SI ON MET JUSTE 2
+        self.dW_candidate = np.zeros((hidden_size, input_size + hidden_size))
             
         self.db_gates = {}
-        self.db_gates["input"] = np.zeros((1, 1))
-        self.db_gates["output"] = np.zeros((1, 1))
-        self.db_gates["forget"] = np.zeros((1, 1))
+        self.db_gates["input"] = np.zeros((hidden_size, 1))
+        self.db_gates["output"] = np.zeros((hidden_size, 1))
+        self.db_gates["forget"] = np.zeros((hidden_size, 1))
         
-        self.db_candidate = np.zeros((1, 1))
+        self.db_candidate = np.zeros((hidden_size, 1))
         
         # Initialize optimizer
         self.optimizer = AdamOptimizer(parameters=[self.W_gates["input"], self.W_gates["output"], self.W_gates["forget"], 
@@ -168,24 +159,10 @@ class LSTM:
         self.c_t (numpy array):
         """
         # Concatenate the previous hidden state and the current input
-        # print("x_t : ")
-        # print(x_t)
-        # print("h_t : ")
-        # print(self.h_t)
         concat = np.vstack((x_t, self.h_t))
-        # print('concat : ')
-        # print(concat)
         
         # Compute the input, forget, and output gate values
-        # print("W_gates :")
-        # print(self.W_gates["input"])
         gate_inputs = np.dot(self.W_gates["input"], concat) + self.b_gates["input"]
-        # print("dot :")
-        # print(np.dot(self.W_gates["input"], concat))
-        # print("bias")
-        # print(self.b_gates["input"])
-        # print("gate_inputs")
-        # print(gate_inputs)
         gate_forgets = np.dot(self.W_gates["forget"], concat) + self.b_gates["forget"]
         gate_outputs = np.dot(self.W_gates["output"], concat) + self.b_gates["output"]
         
@@ -263,7 +240,7 @@ class LSTM:
     def update(self, learning_rate, optimizer=None):
         if optimizer is None:
             for gate in ["input", "output", "forget"]:
-                self.W_gates[gate] -= learning_rate * self.dW_gates[gate] # Est-on sur du -= ? J'aurai tendance à plutôt mettre +=
+                self.W_gates[gate] -= learning_rate * self.dW_gates[gate]
                 self.b_gates[gate] -= learning_rate * self.db_gates[gate]
 
             self.W_candidate -= learning_rate * self.dW_candidate
@@ -276,8 +253,8 @@ class LSTM:
                                          self.db_gates["input"], self.db_gates["output"], self.db_gates["forget"], 
                                          self.dW_candidate, self.db_candidate])
 
-#The number of time data you want to use for the prediction
-sequence_length = 1
+#You need to choose the sequence size which should be the same as the input size.
+sequence_length = 10
 #You also need to choose the prediction size which should be the same as the hidden size.
 predict_size = 1
 
@@ -310,8 +287,6 @@ input_train = input_data[:num_training_samples]
 target_train = target_data[:num_training_samples]
 input_test = input_data[num_training_samples:]
 target_test = target_data[num_training_samples:]
-
-import matplotlib.pyplot as plt
 
 # Define the size of the figure
 fig, axs = plt.subplots(3, 2, figsize=(12, 12))
@@ -346,29 +321,28 @@ plt.tight_layout()
 plt.show()
 
 # Set up the LSTM
-lstm = LSTM(output_size=1)
+lstm = LSTM(input_size=sequence_length, hidden_size=predict_size, output_size=1)
 
 # Train the LSTM
 num_epochs = 120
 learning_rate = 0.0000001
 for epoch in range(num_epochs):
+    
     for i in range(len(input_train)):
         # Get the input and target for this iteration
+        x_t = input_train[i]
+        y_t = target_train[i]
         
-        y_t = target_train[i][0][0]
-        for j in range(sequence_length):
-            x_t = input_train[i][j]
-
-            # Forward pass
-            cache = lstm.forward(x_t)
+        # Forward pass
+        cache = lstm.forward(x_t)
         
         # Compute the loss and its gradient MAE
         # Compute the loss and its gradient MSE
-        loss = (lstm.h_t - y_t) ** 2
+        loss = np.sum((lstm.h_t - y_t) ** 2)
         dloss = 2 * (lstm.h_t - y_t)
         
         # Backward pass
-        lstm.backward(dloss, 0.0, x_t, cache)
+        lstm.backward(dloss, np.zeros((lstm.hidden_size, 1)), x_t, cache)
         
         # Update the weights
         lstm.update(learning_rate, lstm.optimizer)
@@ -377,13 +351,12 @@ for epoch in range(num_epochs):
     if epoch % 10 == 0:
         print("Epoch", epoch, "Loss", loss)
 
+
 # Make predictions on the test set
 predictions = []
 for i in range(len(input_test)):
-    for j in range(sequence_length):
-
-        x_t = input_test[i][j]
-        lstm.forward(x_t)
+    x_t = input_test[i]
+    lstm.forward(x_t)
     predictions.append(lstm.h_t)
 
 # Flatten the predictions array
