@@ -270,7 +270,7 @@ class LSTM:
                                          self.dW_candidate, self.db_candidate])
 
 #The number of time data you want to use for the prediction
-sequence_length = 10
+sequence_length = 1
 #You also need to choose the prediction size which should be the same as the hidden size.
 predict_size = 1
 
@@ -342,7 +342,7 @@ plt.show()
 lstm = LSTM(output_size=1)
 
 # Train the LSTM
-num_epochs = 100
+num_epochs = 120
 learning_rate = 0.0000001
 
 train_loss_list = []
@@ -378,13 +378,14 @@ for epoch in range(num_epochs):
     # Make predictions on the test set
     lstm_copy = copy.deepcopy(lstm)
     for i in range(len(input_test)):
+        y_pred = target_test[i][0][0]
         for j in range(sequence_length):
 
             x_t = input_test[i][j]
 
             lstm_copy.forward(x_t)
 
-        val_loss += (lstm_copy.h_t - y_t) ** 2
+        val_loss += (lstm_copy.h_t - y_pred) ** 2
 
     if epoch % 10 == 0:
         print("Epoch", epoch, "training loss", sequence_length*train_loss.flatten()/len(input_train), "Validation loss", sequence_length*val_loss.flatten()/len(input_test))
