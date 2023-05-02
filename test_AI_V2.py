@@ -35,7 +35,6 @@ class AdamOptimizer:
             gradients (List[np.ndarray]): A list of numpy arrays representing the gradients of the parameters.
         """
         self.t += 1
-        alpha_t = self.alpha * np.sqrt(1 - self.beta2 ** self.t) / (1 - self.beta1 ** self.t)
         
         for i in range(len(parameters)):
             self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * gradients[i]
@@ -45,7 +44,7 @@ class AdamOptimizer:
             m_hat = self.m[i] / (1 - self.beta1 ** self.t)
             v_hat = self.v[i] / (1 - self.beta2 ** self.t)
             
-            parameters[i] -= alpha_t * m_hat / (np.sqrt(v_hat) + self.epsilon)
+            parameters[i] -= self.alpha * m_hat / (np.sqrt(v_hat) + self.epsilon)
 
 
 class LSTM:
@@ -212,7 +211,6 @@ class LSTM:
         cache (tuple) : gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate
 
         Returns:
-        dX_t (numpy array): the gradient of the loss with respect to the input at the current time step
         dW_gates (dictionary): the gradients of the weight matrices for the input, output, and forget gates
         dW_candidate (numpy array): the gradient of the weight matrix for the candidate cell state
         db_gates (dictionary): the gradients of the bias vectors for the input, output, and forget gates
@@ -240,9 +238,6 @@ class LSTM:
         self.db_gates["output"] += do_t
         self.db_candidate += dc_candidate
 
-        # Compute the gradient of the loss with respect to the input at the current time step
-        dX_t = np.dot(self.W_gates["input"].T, di_t) + np.dot(self.W_gates["forget"].T, df_t) + np.dot(self.W_gates["output"].T, do_t) + np.dot(self.W_candidate.T, dc_candidate)
-
         # Compute the gradient of the loss with respect to the previous cell state and hidden state
         dc_t_prev = dc_t * f_t
         dh_t_prev = np.dot(self.W_gates["input"].T, di_t) + np.dot(self.W_gates["forget"].T, df_t) + np.dot(self.W_gates["output"].T, do_t)
@@ -250,8 +245,6 @@ class LSTM:
         # Update the current cell state and hidden state
         self.c_t = self.c_t * f_t + c_candidate * i_t
         self.h_t = np.tanh(self.c_t) * o_t
-
-        return dX_t
 
     def update(self, learning_rate, optimizer=None):
         if optimizer is None:
