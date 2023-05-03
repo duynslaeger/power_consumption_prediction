@@ -93,30 +93,30 @@ class LSTM:
             
         # Initialize biases
         self.b_gates = {}
-        self.b_gates["input"] = np.zeros((1, 1)) # PAS LE MEME RESULTAT SI ON MET JUSTE 0.0
-        self.b_gates["output"] = np.zeros((1, 1))
-        self.b_gates["forget"] = np.zeros((1, 1))
+        self.b_gates["input"] = 0.0 # PAS LE MEME RESULTAT SI ON MET JUSTE 0.0
+        self.b_gates["output"] = 0.0
+        self.b_gates["forget"] = 0.0
         
-        self.b_candidate = np.zeros((1, 1))
+        self.b_candidate = 0.0
             
         # Initialize cell state and hidden state
-        self.c_t = np.zeros((1, 1))
-        self.h_t = np.zeros((1, 1))
+        self.c_t = 0.0
+        self.h_t = 0.0
             
         # Initialize gradients
         self.dW_gates = {}
-        self.dW_gates["input"] = np.zeros((1, 2))
-        self.dW_gates["output"] = np.zeros((1, 2))
-        self.dW_gates["forget"] = np.zeros((1, 2))
+        self.dW_gates["input"] = np.zeros(2)
+        self.dW_gates["output"] = np.zeros(2)
+        self.dW_gates["forget"] = np.zeros(2)
         
-        self.dW_candidate = np.zeros((1, 2)) # ERREUR SI ON MET JUSTE 2
+        self.dW_candidate = np.zeros(2) # ERREUR SI ON MET JUSTE 2
             
         self.db_gates = {}
-        self.db_gates["input"] = np.zeros((1, 1))
-        self.db_gates["output"] = np.zeros((1, 1))
-        self.db_gates["forget"] = np.zeros((1, 1))
+        self.db_gates["input"] = 0.0
+        self.db_gates["output"] = 0.0
+        self.db_gates["forget"] = 0.0
         
-        self.db_candidate = np.zeros((1, 1))
+        self.db_candidate = 0.0
         
         # Initialize optimizer
         self.optimizer = AdamOptimizer(parameters=[self.W_gates["input"], self.W_gates["output"], self.W_gates["forget"], 
@@ -156,28 +156,14 @@ class LSTM:
         x_t (numpy array): the input for the current time step
 
         Returns:
-        h_t (numpy array): the hidden state output for the current time step
+        h_t (numpy array): the hidden state (short term memory) output for the current time step
         self.c_t (numpy array):
         """
         # Concatenate the previous hidden state and the current input
-        # print("x_t : ")
-        # print(x_t)
-        # print("h_t : ")
-        # print(self.h_t)
         concat = np.vstack((x_t, self.h_t))
-        # print('concat : ')
-        # print(concat)
         
         # Compute the input, forget, and output gate values
-        # print("W_gates :")
-        # print(self.W_gates["input"])
         gate_inputs = np.dot(self.W_gates["input"], concat) + self.b_gates["input"]
-        # print("dot :")
-        # print(np.dot(self.W_gates["input"], concat))
-        # print("bias")
-        # print(self.b_gates["input"])
-        # print("gate_inputs")
-        # print(gate_inputs)
         gate_forgets = np.dot(self.W_gates["forget"], concat) + self.b_gates["forget"]
         gate_outputs = np.dot(self.W_gates["output"], concat) + self.b_gates["output"]
         
@@ -196,19 +182,21 @@ class LSTM:
         # Compute the current hidden state
         self.h_t = o_t * np.tanh(self.c_t)
 
-        cache = (gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate)
+        cache = (gate_inputs, gate_forgets, gate_outputs, candidate, i_t, f_t, o_t, c_candidate)
         
         return cache
         
-    def backward(self, dh_t, dc_t, x_t, cache):
+    def backward(self, dh_t, h_prev, dc_t, c_prev, x_t, cache):
         """
         Computes the gradients of the LSTM cell parameters.
 
         Args:
-        dh_t (numpy array): the gradient of the loss with respect to the hidden state
-        dc_t (numpy array): the gradient of the loss with respect to the cell state
-        x_t (numpy array): the input for the current time step
-        cache (tuple) : gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate
+        dh_t : the gradient of the loss with respect to the hidden state (short term memory)
+        h_prev : the value of the hidden state (short term memory) at the previous time step (t-1)
+        dc_t : the gradient of the loss with respect to the cell state (long term memory)
+        c_prev : the value of the cell state (long term memory) at the previous time step (t-1)
+        x_t : the input for the current time step
+        cache (tuple) : gate_inputs, gate_forgets, gate_outputs, candidate, i_t, f_t, o_t, c_candidate
 
         Returns:
         dW_gates (dictionary): the gradients of the weight matrices for the input, output, and forget gates
@@ -217,34 +205,72 @@ class LSTM:
         db_candidate (numpy array): the gradient of the bias vector for the candidate cell state
         """
 
-        gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate = cache
+        gate_inputs, gate_forgets, gate_outputs, candidate, i_t, f_t, o_t, c_candidate = cache
         # Compute the concatenated input and previous hidden state
         concat = np.vstack((x_t, self.h_t))
 
-        # Compute the derivatives of the candidate cell state and the input, forget, and output gates
-        dc_candidate = dh_t * o_t * (1 - np.tanh(self.c_t)**2)
-        do_t = dh_t * np.tanh(self.c_t) * self.dsigmoid(gate_outputs)
-        df_t = dc_t * self.c_t * self.dsigmoid(gate_forgets)
-        di_t = dc_t * c_candidate * self.dsigmoid(gate_inputs)
+        z_f = gate_forgets
+        z_i = gate_inputs
+        z_cand = candidate
+        z_o = gate_outputs
 
-        # Compute the gradients of the weight matrices and bias vectors for the input, output, and forget gates
-        self.dW_gates["input"] += np.dot(di_t, concat.T)
-        self.dW_gates["forget"] += np.dot(df_t, concat.T)
-        self.dW_gates["output"] += np.dot(do_t, concat.T)
-        self.dW_candidate += np.dot(dc_candidate, concat.T)
 
-        self.db_gates["input"] += di_t
-        self.db_gates["forget"] += df_t
-        self.db_gates["output"] += do_t
-        self.db_candidate += dc_candidate
+        # Applying the first part of the chain rule in order to calculate the elements of the gradient
+        # For example : dE/df_t = dE/dh_t * dh_t/dc_t * dc_t/df_t
+        dE_dft = dh_t * o_t * (1-np.tanh(self.c_t)**2) * c_prev
+        dE_dit = dh_t * o_t * (1-np.tanh(self.c_t)**2) * candidate
+        dE_dcandidate = dh_t * o_t * (1-np.tanh(self.c_t)**2) * i_t
+        dE_dot = dh_t * np.tanh(self.c_t)
 
-        # Compute the gradient of the loss with respect to the previous cell state and hidden state
-        dc_t_prev = dc_t * f_t
-        dh_t_prev = np.dot(self.W_gates["input"].T, di_t) + np.dot(self.W_gates["forget"].T, df_t) + np.dot(self.W_gates["output"].T, do_t)
+        # Applying the second part of the chain rule but in a way that limitate the number of calculation
+        # For example : dE_dwhf = dE/df_t * df_t/dw_hf, with w_hf the weight applied to the hidden state in the forget gate
+        prefix_ft = dE_dft * self.dsigmoid(z_f)
+        prefix_it = dE_dit * self.dsigmoid(z_i)
+        prefix_candidate = dE_dcandidate * (1 - np.tanh(z_cand)**2)
+        prefix_ot = dE_dot * self.dsigmoid(z_o)
 
-        # Update the current cell state and hidden state
-        self.c_t = self.c_t * f_t + c_candidate * i_t
-        self.h_t = np.tanh(self.c_t) * o_t
+        # For the following weigths, indice 0 is used to select the weights applied to the input value (x_t), indice 1 to the weights applied to the hidden state (h_t)
+        self.dW_gates["forget"][0] += prefix_ft*x_t
+        self.dW_gates["forget"][1] += prefix_ft*h_prev
+        self.db_gates["forget"] += prefix_ft
+
+        self.dW_gates["input"][0] += prefix_it*x_t
+        self.dW_gates["input"][1] += prefix_it*h_prev
+        self.db_gates["input"] += prefix_it
+
+        self.dW_candidate[0] += prefix_candidate*x_t
+        self.dW_candidate[1] += prefix_candidate*h_prev
+        self.db_candidate += prefix_candidate
+
+        self.dW_gates["output"][0] += prefix_ot*x_t
+        self.dW_gates["output"][1] += prefix_ot*h_prev
+        self.db_gates["output"] += prefix_ot
+
+
+        # # Compute the derivatives of the candidate cell state and the input, forget, and output gates
+        # dc_candidate = dh_t * o_t * (1 - np.tanh(self.c_t)**2)
+        # do_t = dh_t * np.tanh(self.c_t) * self.dsigmoid(gate_outputs)
+        # df_t = dc_t * self.c_t * self.dsigmoid(gate_forgets)
+        # di_t = dc_t * c_candidate * self.dsigmoid(gate_inputs)
+
+        # # Compute the gradients of the weight matrices and bias vectors for the input, output, and forget gates
+        # self.dW_gates["input"] += np.dot(di_t, concat.T)
+        # self.dW_gates["forget"] += np.dot(df_t, concat.T)
+        # self.dW_gates["output"] += np.dot(do_t, concat.T)
+        # self.dW_candidate += np.dot(dc_candidate, concat.T)
+
+        # self.db_gates["input"] += di_t
+        # self.db_gates["forget"] += df_t
+        # self.db_gates["output"] += do_t
+        # self.db_candidate += dc_candidate
+
+        # # Compute the gradient of the loss with respect to the previous cell state and hidden state
+        # dc_t_prev = dc_t * f_t
+        # dh_t_prev = np.dot(self.W_gates["input"].T, di_t) + np.dot(self.W_gates["forget"].T, df_t) + np.dot(self.W_gates["output"].T, do_t)
+
+        # # Update the current cell state and hidden state
+        # self.c_t = self.c_t * f_t + c_candidate * i_t
+        # self.h_t = np.tanh(self.c_t) * o_t
 
     def update(self, learning_rate, optimizer=None):
         if optimizer is None:
@@ -300,36 +326,36 @@ target_test = target_data[num_training_samples:]
 import matplotlib.pyplot as plt
 
 # Define the size of the figure
-fig, axs = plt.subplots(3, 2, figsize=(12, 12))
-axs = axs.ravel()
+# fig, axs = plt.subplots(3, 2, figsize=(12, 12))
+# axs = axs.ravel()
 
-# Plot input data
-axs[0].plot(input_data.flatten())
-axs[0].set_title('Input data')
+# # Plot input data
+# axs[0].plot(input_data.flatten())
+# axs[0].set_title('Input data')
 
-# Plot target data
-axs[1].plot(target_data.flatten())
-axs[1].set_title('Target data')
+# # Plot target data
+# axs[1].plot(target_data.flatten())
+# axs[1].set_title('Target data')
 
-# Plot input train
-axs[2].plot(input_train.flatten())
-axs[2].set_title('Input train')
+# # Plot input train
+# axs[2].plot(input_train.flatten())
+# axs[2].set_title('Input train')
 
-# Plot target train
-axs[3].plot(target_train.flatten())
-axs[3].set_title('Target train')
+# # Plot target train
+# axs[3].plot(target_train.flatten())
+# axs[3].set_title('Target train')
 
-# Plot input test
-axs[4].plot(input_test.flatten())
-axs[4].set_title('Input test')
+# # Plot input test
+# axs[4].plot(input_test.flatten())
+# axs[4].set_title('Input test')
 
-# Plot target test
-axs[5].plot(target_test.flatten())
-axs[5].set_title('Target test')
+# # Plot target test
+# axs[5].plot(target_test.flatten())
+# axs[5].set_title('Target test')
 
-# Show the plot
-plt.tight_layout()
-plt.show()
+# # Show the plot
+# plt.tight_layout()
+# plt.show()
 
 # Set up the LSTM
 lstm = LSTM(output_size=1)
@@ -354,18 +380,19 @@ for epoch in range(num_epochs):
             x_t = input_train[i][j]
 
             # Forward pass
+            h_prev = lstm.h_t
+            c_prev = lstm.c_t
             cache = lstm.forward(x_t)
+            dloss = 2 * (lstm.h_t - y_t)
+            # Backward pass
+            lstm.backward(dloss, h_prev, 0.0, c_prev, x_t, cache) 
+            # Update the weights
+            lstm.update(learning_rate, lstm.optimizer)
         
         # Compute the loss and its gradient MAE
         # Compute the loss and its gradient MSE
         loss = (lstm.h_t - y_t) ** 2
-        dloss = 2 * (lstm.h_t - y_t)
         
-        # Backward pass
-        lstm.backward(dloss, 0.0, x_t, cache)
-        
-        # Update the weights
-        lstm.update(learning_rate, lstm.optimizer)
         train_loss += loss
 
     # Make predictions on the test set
