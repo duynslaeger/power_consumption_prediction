@@ -93,7 +93,7 @@ class LSTM:
             
         # Initialize biases
         self.b_gates = {}
-        self.b_gates["input"] = 0.0 # PAS LE MEME RESULTAT SI ON MET JUSTE 0.0
+        self.b_gates["input"] = 0.0 
         self.b_gates["output"] = 0.0
         self.b_gates["forget"] = 0.0
         
@@ -109,7 +109,7 @@ class LSTM:
         self.dW_gates["output"] = np.zeros(2)
         self.dW_gates["forget"] = np.zeros(2)
         
-        self.dW_candidate = np.zeros(2) # ERREUR SI ON MET JUSTE 2
+        self.dW_candidate = np.zeros(2) 
             
         self.db_gates = {}
         self.db_gates["input"] = 0.0
@@ -299,38 +299,6 @@ target_test = target_data[num_training_samples:]
 
 import matplotlib.pyplot as plt
 
-# Define the size of the figure
-# fig, axs = plt.subplots(3, 2, figsize=(12, 12))
-# axs = axs.ravel()
-
-# # Plot input data
-# axs[0].plot(input_data.flatten())
-# axs[0].set_title('Input data')
-
-# # Plot target data
-# axs[1].plot(target_data.flatten())
-# axs[1].set_title('Target data')
-
-# # Plot input train
-# axs[2].plot(input_train.flatten())
-# axs[2].set_title('Input train')
-
-# # Plot target train
-# axs[3].plot(target_train.flatten())
-# axs[3].set_title('Target train')
-
-# # Plot input test
-# axs[4].plot(input_test.flatten())
-# axs[4].set_title('Input test')
-
-# # Plot target test
-# axs[5].plot(target_test.flatten())
-# axs[5].set_title('Target test')
-
-# # Show the plot
-# plt.tight_layout()
-# plt.show()
-
 # Set up the LSTM
 lstm = LSTM(output_size=1)
 
@@ -382,11 +350,11 @@ for epoch in range(num_epochs):
         val_loss += (lstm_copy.h_t - y_pred) ** 2
 
     if epoch % 10 == 0:
-        print("Epoch", epoch, "training loss", sequence_length*train_loss.flatten()/len(input_train), "Validation loss", sequence_length*val_loss.flatten()/len(input_test))
+        print("Epoch", epoch, "training loss", train_loss.flatten()/(len(input_train)*sequence_length), "Validation loss", val_loss.flatten()/(sequence_length*len(input_test)))
 
     # Add the loss values to their respective lists for plotting
-    train_loss_list.append(sequence_length*train_loss.flatten()/len(input_train))
-    val_loss_list.append(sequence_length*val_loss.flatten()/len(input_test))
+    train_loss_list.append(train_loss.flatten()/(sequence_length*len(input_train)))
+    val_loss_list.append(val_loss.flatten()/(sequence_length*len(input_test)))
 
 # Make predictions on the test set
 predictions = []
