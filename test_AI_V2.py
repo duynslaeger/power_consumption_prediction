@@ -83,13 +83,13 @@ class LSTM:
         # Initialize weights
         self.W_gates = {}
         np.random.seed(10)
-        self.W_gates["input"] = np.random.randn(1, 2)* np.sqrt(2 / 2)
+        self.W_gates["input"] = np.random.randn(1, 2)
         np.random.seed(10)
-        self.W_gates["output"] = np.random.randn(1, 2)* np.sqrt(2 / 2)
+        self.W_gates["output"] = np.random.randn(1, 2)
         np.random.seed(10)
-        self.W_gates["forget"] = np.random.randn(1, 2)* np.sqrt(2 / 2)
+        self.W_gates["forget"] = np.random.randn(1, 2)
         np.random.seed(10)
-        self.W_candidate = np.random.randn(1, 2)* np.sqrt(2 / 2)
+        self.W_candidate = np.random.randn(1, 2)
             
         # Initialize biases
         self.b_gates = {}
