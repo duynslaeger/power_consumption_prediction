@@ -4,6 +4,7 @@ import pandas as pd
 import copy
 import matplotlib.pyplot as plt
 
+
 class AdamOptimizer:
     def __init__(self, parameters, alpha=0.001, beta1=0.09, beta2=0.999, epsilon=1e-8):
         """
@@ -51,6 +52,7 @@ class LSTM:
     Long Short-Term Memory (LSTM) network.
 
     Args:
+        input_size (int): The number of input features.
         hidden_size (int): The number of hidden units in the LSTM cell.
         output_size (int): The number of output features.
     
@@ -75,10 +77,9 @@ class LSTM:
 
     """
     
-    def __init__(self, hidden_size, output_size): 
+    def __init__(self, hidden_size): 
         self.input_size = 1 # Alsways equal to 1
         self.hidden_size = hidden_size
-        self.output_size = output_size 
 
         # Initialize weights using Xavier initialization
         self.W_gates = {}
@@ -91,7 +92,7 @@ class LSTM:
         self.b_gates = {}
         self.b_gates["input"] = np.zeros((hidden_size, 1))
         self.b_gates["output"] = np.zeros((hidden_size, 1))
-        self.b_gates["forget"] = np.zeros((hidden_size, 1))  # Initialized with positive values
+        self.b_gates["forget"] = np.zeros((hidden_size, 1))  
         self.b_candidate = np.zeros((hidden_size, 1))
         
         # Rest of the code remains the same
@@ -185,9 +186,10 @@ class LSTM:
         o_t = self.sigmoid(gate_outputs)
         
         # Compute the candidate values
-        candidate = np.dot(self.W_candidate, concat) + self.b_candidate
-        c_candidate = np.tanh(candidate)
+
+        c_candidate = np.tanh(np.dot(self.W_candidate, concat) + self.b_candidate)
         cprev = copy.deepcopy(self.c_t)
+
         # Compute the current cell state
         self.c_t = f_t * self.c_t + i_t * c_candidate
         
@@ -217,12 +219,7 @@ class LSTM:
         # Compute the derivatives of the candidate cell state and the input, forget, and output gates
         do_t = dh_t * np.tanh(self.c_t)  * self.dsigmoid(gate_outputs)
 
-        #Right expression 
-        #df_t = dc_t * cprev * self.dsigmoid(gate_forgets)
-        #di_t = dc_t * c_candidate * self.dsigmoid(gate_inputs)
-        #dc_candidate = dc_t * i_t
-
-        dc_candidate = dc_t * i_t
+        dc_candidate = dc_t * i_t * (1 - np.tanh(c_candidate)**2)
         df_t = dc_t * cprev * self.dsigmoid(gate_forgets)
         di_t = dc_t * c_candidate * self.dsigmoid(gate_inputs)
 
@@ -235,7 +232,7 @@ class LSTM:
         self.db_gates["input"] += di_t
         self.db_gates["forget"] += df_t
         self.db_gates["output"] += do_t
-        self.db_candidate += dc_candidate
+        self.db_candidate += dc_candidate 
 
         # Compute the current cell state
         self.c_t = f_t * self.c_t + i_t * c_candidate
@@ -260,7 +257,7 @@ class LSTM:
                                          self.dW_candidate, self.db_candidate])
 
 
-def train_lstm(lstm, input_train, target_train, input_test, target_test, num_epochs, learning_rate, perform_predictions=True):
+def train_lstm(lstm, input_train, target_train, input_val, target_val, num_epochs, learning_rate, perform_predictions=True):
     train_loss_list = []
     val_loss_list = []
 
@@ -272,9 +269,8 @@ def train_lstm(lstm, input_train, target_train, input_test, target_test, num_epo
             # Get the input and target for this iteration
             y_t = target_train[i]
 
-            lstm.reset()
-
             for j in range(sequence_length):
+                lstm.reset()
                 x_t = input_train[i][j]
 
                 # Forward pass
@@ -295,10 +291,10 @@ def train_lstm(lstm, input_train, target_train, input_test, target_test, num_epo
         if perform_predictions:
             # Make predictions on the test set
             lstm_copy = copy.deepcopy(lstm)
-            for i in range(len(input_test)):
-                y_pred = target_test[i]
+            for i in range(len(input_val)):
+                y_pred = target_val[i]
                 for j in range(sequence_length):
-                    x_t = input_test[i][j]
+                    x_t = input_val[i][j]
                     lstm_copy.forward(x_t)
 
                 val_loss += (lstm_copy.h_t - y_pred) ** 2
@@ -306,14 +302,14 @@ def train_lstm(lstm, input_train, target_train, input_test, target_test, num_epo
         if epoch % 10 == 0:
             if perform_predictions:
                 print("Epoch", epoch, "training loss", train_loss.flatten() / len(input_train), "Validation loss",
-                      val_loss.flatten() / len(input_test))
+                      val_loss.flatten() / len(input_val))
             else:
                 print("Epoch", epoch, "training loss", train_loss.flatten() / len(input_train))
 
         # Add the loss values to their respective lists for plotting
         train_loss_list.append(train_loss.flatten() / len(input_train))
         if perform_predictions:
-            val_loss_list.append(val_loss.flatten() / len(input_test))
+            val_loss_list.append(val_loss.flatten() / len(input_val))
 
     if perform_predictions:
         return lstm, train_loss_list, val_loss_list
@@ -321,7 +317,7 @@ def train_lstm(lstm, input_train, target_train, input_test, target_test, num_epo
         return lstm, train_loss_list
 
 
-def preprocess_data(file_path, sequence_length, predict_size, train_ratio=0.8, power = 'p_cons'):
+def preprocess_data(file_path, sequence_length, predict_size, train_ratio=0.8, val_ratio=0.1, power='p_cons'):
     # Read the dataset
     dataset = pd.read_csv(file_path, usecols=['ts', power], index_col='ts', parse_dates=['ts'])
     dataset = dataset.dropna()
@@ -330,8 +326,8 @@ def preprocess_data(file_path, sequence_length, predict_size, train_ratio=0.8, p
     input_data = []
     target_data = []
     for i in range(len(dataset) - sequence_length - predict_size):
-        input_data.append(np.array([dataset[power][i:i+sequence_length]]))
-        target_data.append(dataset[power][i+sequence_length : i+sequence_length + predict_size])
+        input_data.append(np.array([dataset[power][i:i + sequence_length]]))
+        target_data.append(dataset[power][i + sequence_length: i + sequence_length + predict_size])
     input_data = np.array(input_data).reshape(len(input_data), sequence_length, 1)
     target_data = np.array(target_data).reshape(len(target_data), predict_size, 1)
 
@@ -339,16 +335,19 @@ def preprocess_data(file_path, sequence_length, predict_size, train_ratio=0.8, p
     input_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
     target_data = (target_data - np.min(target_data)) / (np.max(target_data) - np.min(target_data))
 
-    # Split the data into training and testing sets
+    # Split the data into training, validation, and testing sets
     num_samples = len(input_data)
     num_training_samples = int(num_samples * train_ratio)
+    num_validation_samples = int(num_samples * val_ratio)
 
     input_train = input_data[:num_training_samples]
     target_train = target_data[:num_training_samples]
-    input_test = input_data[num_training_samples:]
-    target_test = target_data[num_training_samples:]
+    input_val = input_data[num_training_samples:num_training_samples + num_validation_samples]
+    target_val = target_data[num_training_samples:num_training_samples + num_validation_samples]
+    input_test = input_data[num_training_samples + num_validation_samples:]
+    target_test = target_data[num_training_samples + num_validation_samples:]
 
-    return input_train, target_train, input_test, target_test
+    return input_train, target_train, input_val, target_val, input_test, target_test
 
 
 #The number of time data you want to use for the prediction
@@ -358,18 +357,19 @@ sequence_length = 1
 predict_size = 1
 
 #Preprocess
-input_train, target_train, input_test, target_test = preprocess_data('CDB002.csv', sequence_length, predict_size)
+input_train, target_train, input_val, target_val, input_test, target_test = preprocess_data('CDB/CDB002.csv', sequence_length, predict_size)
 
 # Set up the LSTM
-lstm = LSTM(hidden_size=1, output_size=predict_size)
+lstm = LSTM(hidden_size=predict_size)
 
 # Train the LSTM
-num_epochs = 30
+num_epochs = 80
+
 #Set up for a non adam optimizer
 learning_rate = 0.001
 
 #training
-lstm, train_loss_list, val_loss_list = train_lstm(lstm, input_train, target_train, input_test, target_test, num_epochs, learning_rate, perform_predictions=True)
+lstm, train_loss_list, val_loss_list = train_lstm(lstm, input_train, target_train, input_val, target_val, num_epochs, learning_rate, perform_predictions=True)
 
 # Make predictions on the test set
 predictions = []
