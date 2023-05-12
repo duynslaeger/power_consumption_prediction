@@ -358,7 +358,7 @@ sequence_length = 1
 predict_size = 1
 
 #Preprocess
-input_train, target_train, input_test, target_test = preprocess_data('CDB/CDB002.csv', sequence_length, predict_size)
+input_train, target_train, input_test, target_test = preprocess_data('CDB002.csv', sequence_length, predict_size)
 
 # Set up the LSTM
 lstm = LSTM(hidden_size=1, output_size=predict_size)
