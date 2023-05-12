@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
-# Set the random seed
-
+import copy
+import matplotlib.pyplot as plt
 
 class AdamOptimizer:
-    def __init__(self, parameters, alpha=0.00001, beta1=0.9, beta2=0.0999, epsilon=1e-8):
+    def __init__(self, parameters, alpha=0.001, beta1=0.09, beta2=0.999, epsilon=1e-8):
         """
         Initializes the Adam optimizer.
 
@@ -34,13 +34,16 @@ class AdamOptimizer:
             gradients (List[np.ndarray]): A list of numpy arrays representing the gradients of the parameters.
         """
         self.t += 1
-        alpha_t = self.alpha * np.sqrt(1 - self.beta2 ** self.t) / (1 - self.beta1 ** self.t)
         
         for i in range(len(parameters)):
             self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * gradients[i]
             self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * gradients[i] ** 2
             
-            parameters[i] -= alpha_t * self.m[i] / (np.sqrt(self.v[i]) + self.epsilon)
+            # Add missing operations to compute bias-corrected first and second moment estimates
+            m_hat = self.m[i] / (1 - self.beta1 ** self.t)
+            v_hat = self.v[i] / (1 - self.beta2 ** self.t)
+            
+            parameters[i] -= self.alpha * m_hat / (np.sqrt(v_hat) + self.epsilon)
 
 
 class LSTM:
@@ -73,54 +76,66 @@ class LSTM:
 
     """
     
-    def __init__(self, input_size, hidden_size, output_size): 
-        self.input_size = input_size
+    def __init__(self, hidden_size, output_size): 
+        self.input_size = 1 # Alsways equal to 1
         self.hidden_size = hidden_size
         self.output_size = output_size 
 
-        # Initialize weights
+        # Initialize weights using Xavier initialization
         self.W_gates = {}
-        np.random.seed(10)
-        self.W_gates["input"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
-        np.random.seed(10)
-        self.W_gates["output"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
-        np.random.seed(10)
-        self.W_gates["forget"] = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
-        np.random.seed(10)
-        self.W_candidate = np.random.randn(hidden_size, input_size + hidden_size)* np.sqrt(2 / (input_size + hidden_size))
-            
-        # Initialize biases
+        self.W_gates["input"] = np.random.randn(hidden_size, self.input_size + hidden_size) / np.sqrt(self.input_size + hidden_size)
+        self.W_gates["output"] = np.random.randn(hidden_size, self.input_size + hidden_size) / np.sqrt(self.input_size + hidden_size)
+        self.W_gates["forget"] = np.random.randn(hidden_size, self.input_size + hidden_size) / np.sqrt(self.input_size + hidden_size)
+        self.W_candidate = np.random.randn(hidden_size, self.input_size + hidden_size) / np.sqrt(self.input_size + hidden_size)
+        
+        # Initialize biases with positive forget bias
         self.b_gates = {}
         self.b_gates["input"] = np.zeros((hidden_size, 1))
         self.b_gates["output"] = np.zeros((hidden_size, 1))
-        self.b_gates["forget"] = np.zeros((hidden_size, 1))
-        
+        self.b_gates["forget"] = np.zeros((hidden_size, 1))  # Initialized with positive values
         self.b_candidate = np.zeros((hidden_size, 1))
-            
-        # Initialize cell state and hidden state
+        
+        # Rest of the code remains the same
         self.c_t = np.zeros((hidden_size, 1))
         self.h_t = np.zeros((hidden_size, 1))
-            
-        # Initialize gradients
         self.dW_gates = {}
-        self.dW_gates["input"] = np.zeros((hidden_size, input_size + hidden_size))
-        self.dW_gates["output"] = np.zeros((hidden_size, input_size + hidden_size))
-        self.dW_gates["forget"] = np.zeros((hidden_size, input_size + hidden_size))
-        
-        self.dW_candidate = np.zeros((hidden_size, input_size + hidden_size))
-            
+        self.dW_gates["input"] = np.zeros((hidden_size, self.input_size + hidden_size))
+        self.dW_gates["output"] = np.zeros((hidden_size, self.input_size + hidden_size))
+        self.dW_gates["forget"] = np.zeros((hidden_size, self.input_size + hidden_size))
+        self.dW_candidate = np.zeros((hidden_size, self.input_size + hidden_size))
         self.db_gates = {}
         self.db_gates["input"] = np.zeros((hidden_size, 1))
         self.db_gates["output"] = np.zeros((hidden_size, 1))
         self.db_gates["forget"] = np.zeros((hidden_size, 1))
-        
         self.db_candidate = np.zeros((hidden_size, 1))
-        
-        # Initialize optimizer
         self.optimizer = AdamOptimizer(parameters=[self.W_gates["input"], self.W_gates["output"], self.W_gates["forget"], 
-                                            self.b_gates["input"], self.b_gates["output"], self.b_gates["forget"], 
-                                            self.W_candidate, self.b_candidate])
+                                                   self.b_gates["input"], self.b_gates["output"], self.b_gates["forget"], 
+                                                   self.W_candidate, self.b_candidate])
+                                                   
+    def reset(self):
+        """
+        Réinitialise les gradients des poids et des biais à zéro.
+        """
+        # Initialize biases with positive forget bias
+        self.b_gates = {}
+        self.b_gates["input"] = np.zeros((self.hidden_size, 1))
+        self.b_gates["output"] = np.zeros((self.hidden_size, 1))
+        self.b_gates["forget"] = np.zeros((self.hidden_size, 1))  # Initialized with positive values
+        self.b_candidate = np.zeros((self.hidden_size, 1))
 
+        self.dW_gates = {
+            "input": np.zeros_like(self.W_gates["input"]),
+            "forget": np.zeros_like(self.W_gates["forget"]),
+            "output": np.zeros_like(self.W_gates["output"])
+        }
+        self.db_gates = {
+            "input": np.zeros_like(self.b_gates["input"]),
+            "forget": np.zeros_like(self.b_gates["forget"]),
+            "output": np.zeros_like(self.b_gates["output"])
+        }
+        self.dW_candidate = np.zeros_like(self.W_candidate)
+        self.db_candidate = np.zeros_like(self.b_candidate)
+    
     def sigmoid(self, x):
         """
         Applies the sigmoid function elementwise to an input array.
@@ -157,11 +172,11 @@ class LSTM:
         h_t (numpy array): the hidden state output for the current time step
         self.c_t (numpy array):
         """
-        # Concatenate the previous hidden state and the current input
-        concat = np.vstack((x_t, self.h_t))
-        
-        # Compute the input, forget, and output gate values
+
+        concat = np.vstack((x_t, copy.deepcopy(self.h_t)))
+
         gate_inputs = np.dot(self.W_gates["input"], concat) + self.b_gates["input"]
+
         gate_forgets = np.dot(self.W_gates["forget"], concat) + self.b_gates["forget"]
         gate_outputs = np.dot(self.W_gates["output"], concat) + self.b_gates["output"]
         
@@ -173,43 +188,43 @@ class LSTM:
         # Compute the candidate values
         candidate = np.dot(self.W_candidate, concat) + self.b_candidate
         c_candidate = np.tanh(candidate)
-        
+        cprev = copy.deepcopy(self.c_t)
         # Compute the current cell state
         self.c_t = f_t * self.c_t + i_t * c_candidate
         
         # Compute the current hidden state
         self.h_t = o_t * np.tanh(self.c_t)
 
-        cache = (gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate)
+        cache = (concat, cprev, gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate)
         
         return cache
         
-    def backward(self, dh_t, dc_t, x_t, cache):
+    def backward(self, dh_t, x_t, cache):
         """
         Computes the gradients of the LSTM cell parameters.
 
         Args:
         dh_t (numpy array): the gradient of the loss with respect to the hidden state
-        dc_t (numpy array): the gradient of the loss with respect to the cell state
         x_t (numpy array): the input for the current time step
         cache (tuple) : gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate
 
-        Returns:
-        dX_t (numpy array): the gradient of the loss with respect to the input at the current time step
-        dW_gates (dictionary): the gradients of the weight matrices for the input, output, and forget gates
-        dW_candidate (numpy array): the gradient of the weight matrix for the candidate cell state
-        db_gates (dictionary): the gradients of the bias vectors for the input, output, and forget gates
-        db_candidate (numpy array): the gradient of the bias vector for the candidate cell state
+        Returns: NOTHING
         """
 
-        gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate = cache
+        concat, cprev, gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate = cache
         # Compute the concatenated input and previous hidden state
-        concat = np.vstack((x_t, self.h_t))
+        dc_t = dh_t * o_t * (1 - np.tanh(self.c_t)**2)
 
         # Compute the derivatives of the candidate cell state and the input, forget, and output gates
-        dc_candidate = dh_t * o_t * (1 - np.tanh(self.c_t)**2)
-        do_t = dh_t * np.tanh(self.c_t) * self.dsigmoid(gate_outputs)
-        df_t = dc_t * self.c_t * self.dsigmoid(gate_forgets)
+        do_t = dh_t * np.tanh(self.c_t)  * self.dsigmoid(gate_outputs)
+
+        #Right expression 
+        #df_t = dc_t * cprev * self.dsigmoid(gate_forgets)
+        #di_t = dc_t * c_candidate * self.dsigmoid(gate_inputs)
+        #dc_candidate = dc_t * i_t
+
+        dc_candidate = dc_t * i_t
+        df_t = dc_t * cprev * self.dsigmoid(gate_forgets)
         di_t = dc_t * c_candidate * self.dsigmoid(gate_inputs)
 
         # Compute the gradients of the weight matrices and bias vectors for the input, output, and forget gates
@@ -223,23 +238,16 @@ class LSTM:
         self.db_gates["output"] += do_t
         self.db_candidate += dc_candidate
 
-        # Compute the gradient of the loss with respect to the input at the current time step
-        dX_t = np.dot(self.W_gates["input"].T, di_t) + np.dot(self.W_gates["forget"].T, df_t) + np.dot(self.W_gates["output"].T, do_t) + np.dot(self.W_candidate.T, dc_candidate)
-
-        # Compute the gradient of the loss with respect to the previous cell state and hidden state
-        dc_t_prev = dc_t * f_t
-        dh_t_prev = np.dot(self.W_gates["input"].T, di_t) + np.dot(self.W_gates["forget"].T, df_t) + np.dot(self.W_gates["output"].T, do_t)
-
-        # Update the current cell state and hidden state
-        self.c_t = self.c_t * f_t + c_candidate * i_t
-        self.h_t = np.tanh(self.c_t) * o_t
-
-        return dX_t
+        # Compute the current cell state
+        self.c_t = f_t * self.c_t + i_t * c_candidate
+        
+        # Compute the current hidden state
+        self.h_t = o_t * np.tanh(self.c_t)
 
     def update(self, learning_rate, optimizer=None):
         if optimizer is None:
             for gate in ["input", "output", "forget"]:
-                self.W_gates[gate] -= learning_rate * self.dW_gates[gate]
+                self.W_gates[gate] -= learning_rate * self.dW_gates[gate] # Est-on sur du -= ? J'aurai tendance à plutôt mettre +=
                 self.b_gates[gate] -= learning_rate * self.db_gates[gate]
 
             self.W_candidate -= learning_rate * self.dW_candidate
@@ -252,114 +260,136 @@ class LSTM:
                                          self.db_gates["input"], self.db_gates["output"], self.db_gates["forget"], 
                                          self.dW_candidate, self.db_candidate])
 
-#You need to choose the sequence size which should be the same as the input size.
+
+def train_lstm(lstm, input_train, target_train, input_test, target_test, num_epochs, learning_rate, perform_predictions=True):
+    train_loss_list = []
+    val_loss_list = []
+
+    for epoch in range(num_epochs):
+        train_loss = 0.0
+        val_loss = 0.0
+
+        for i in range(len(input_train)):
+            # Get the input and target for this iteration
+            y_t = target_train[i]
+
+            lstm.reset()
+
+            for j in range(sequence_length):
+                x_t = input_train[i][j]
+
+                # Forward pass
+                cache = lstm.forward(x_t)
+
+                # Compute the loss and its gradient MSE
+                dloss = 2 * (lstm.h_t - y_t)
+
+                # Backward pass
+                lstm.backward(dloss, x_t, cache)
+
+                # Update the weights
+                lstm.update(learning_rate, lstm.optimizer)
+
+            loss = (lstm.h_t - y_t) ** 2
+            train_loss += loss
+
+        if perform_predictions:
+            # Make predictions on the test set
+            lstm_copy = copy.deepcopy(lstm)
+            for i in range(len(input_test)):
+                y_pred = target_test[i]
+                for j in range(sequence_length):
+                    x_t = input_test[i][j]
+                    lstm_copy.forward(x_t)
+
+                val_loss += (lstm_copy.h_t - y_pred) ** 2
+
+        if epoch % 10 == 0:
+            if perform_predictions:
+                print("Epoch", epoch, "training loss", train_loss.flatten() / len(input_train), "Validation loss",
+                      val_loss.flatten() / len(input_test))
+            else:
+                print("Epoch", epoch, "training loss", train_loss.flatten() / len(input_train))
+
+        # Add the loss values to their respective lists for plotting
+        train_loss_list.append(train_loss.flatten() / len(input_train))
+        if perform_predictions:
+            val_loss_list.append(val_loss.flatten() / len(input_test))
+
+    if perform_predictions:
+        return lstm, train_loss_list, val_loss_list
+    else:
+        return lstm, train_loss_list
+
+
+def preprocess_data(file_path, sequence_length, predict_size, train_ratio=0.8, power = 'p_cons'):
+    # Read the dataset
+    dataset = pd.read_csv(file_path, usecols=['ts', power], index_col='ts', parse_dates=['ts'])
+    dataset = dataset.dropna()
+
+    # Add p_cons data to input_data
+    input_data = []
+    target_data = []
+    for i in range(len(dataset) - sequence_length - predict_size):
+        input_data.append(np.array([dataset[power][i:i+sequence_length]]))
+        target_data.append(dataset[power][i+sequence_length : i+sequence_length + predict_size])
+    input_data = np.array(input_data).reshape(len(input_data), sequence_length, 1)
+    target_data = np.array(target_data).reshape(len(target_data), predict_size, 1)
+
+    # Normalize the data using min-max normalization
+    input_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
+    target_data = (target_data - np.min(target_data)) / (np.max(target_data) - np.min(target_data))
+
+    # Split the data into training and testing sets
+    num_samples = len(input_data)
+    num_training_samples = int(num_samples * train_ratio)
+
+    input_train = input_data[:num_training_samples]
+    target_train = target_data[:num_training_samples]
+    input_test = input_data[num_training_samples:]
+    target_test = target_data[num_training_samples:]
+
+    return input_train, target_train, input_test, target_test
+
+
+#The number of time data you want to use for the prediction
 sequence_length = 1
+
 #You also need to choose the prediction size which should be the same as the hidden size.
 predict_size = 1
 
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Took a data 
-dataset = pd.read_csv('CDB005_15min.csv', usecols=['ts', 'p_cons'], index_col='ts', parse_dates=['ts'])
-
-# Set up the input and target data for the LSTM
-
-# Add p_cons data to input_data
-input_data = []
-target_data = []
-for i in range(len(dataset) - sequence_length - predict_size):
-    input_data.append(np.array([dataset['p_cons'][i:i+sequence_length]]))
-    target_data.append(dataset['p_cons'][i+sequence_length : i+sequence_length + predict_size])
-input_data = np.array(input_data).reshape(len(input_data), sequence_length, 1)
-target_data = np.array(target_data).reshape(len(target_data), predict_size, 1)
-
-# Normalize the data using min-max normalization
-input_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
-target_data = (target_data - np.min(target_data)) / (np.max(target_data) - np.min(target_data))
-
-# Split the data into training and testing sets
-num_samples = len(input_data)
-num_training_samples = int(num_samples * 0.75)
-
-input_train = input_data[:num_training_samples]
-target_train = target_data[:num_training_samples]
-input_test = input_data[num_training_samples:]
-target_test = target_data[num_training_samples:]
-
-import matplotlib.pyplot as plt
-
-# Define the size of the figure
-fig, axs = plt.subplots(3, 2, figsize=(12, 12))
-axs = axs.ravel()
-
-# Plot input data
-axs[0].plot(input_data.flatten())
-axs[0].set_title('Input data')
-
-# Plot target data
-axs[1].plot(target_data.flatten())
-axs[1].set_title('Target data')
-
-# Plot input train
-axs[2].plot(input_train.flatten())
-axs[2].set_title('Input train')
-
-# Plot target train
-axs[3].plot(target_train.flatten())
-axs[3].set_title('Target train')
-
-# Plot input test
-axs[4].plot(input_test.flatten())
-axs[4].set_title('Input test')
-
-# Plot target test
-axs[5].plot(target_test.flatten())
-axs[5].set_title('Target test')
-
-# Show the plot
-plt.tight_layout()
-plt.show()
+#Preprocess
+input_train, target_train, input_test, target_test = preprocess_data('CDB/CDB002.csv', sequence_length, predict_size)
 
 # Set up the LSTM
-lstm = LSTM(input_size=sequence_length, hidden_size=predict_size, output_size=1)
+lstm = LSTM(hidden_size=1, output_size=predict_size)
 
 # Train the LSTM
-num_epochs = 120
-learning_rate = 0.0000001
-for epoch in range(num_epochs):
-    for i in range(len(input_train)):
-        # Get the input and target for this iteration
-        x_t = input_train[i]
-        y_t = target_train[i]
-        
-        # Forward pass
-        cache = lstm.forward(x_t)
-        
-        # Compute the loss and its gradient MAE
-        # Compute the loss and its gradient MSE
-        loss = np.sum((lstm.h_t - y_t) ** 2)
-        dloss = 2 * (lstm.h_t - y_t)
-        
-        # Backward pass
-        lstm.backward(dloss, np.zeros((lstm.hidden_size, 1)), x_t, cache)
-        
-        # Update the weights
-        lstm.update(learning_rate, lstm.optimizer)
-        
-    # Print the loss every 10 epochs
-    if epoch % 10 == 0:
-        print("Epoch", epoch, "Loss", loss)
+num_epochs = 30
+#Set up for a non adam optimizer
+learning_rate = 0.001
+
+#training
+lstm, train_loss_list, val_loss_list = train_lstm(lstm, input_train, target_train, input_test, target_test, num_epochs, learning_rate, perform_predictions=True)
 
 # Make predictions on the test set
 predictions = []
 for i in range(len(input_test)):
-    x_t = input_test[i]
-    lstm.forward(x_t)
+    for j in range(sequence_length):
+
+        x_t = input_test[i][j]
+        lstm.forward(x_t)
     predictions.append(lstm.h_t)
 
 # Flatten the predictions array
 predictions = np.array(predictions).flatten()
+
+# Plot the training and validation loss curves
+plt.plot(train_loss_list, label='Training Loss')
+plt.plot(val_loss_list, label='Validation Loss')
+plt.legend()
+plt.show()
+
 
 # Plot the predictions against the actual values
 plt.plot(target_test.flatten(), label='Target test')
