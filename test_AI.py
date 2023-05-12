@@ -51,7 +51,6 @@ class LSTM:
     Long Short-Term Memory (LSTM) network.
 
     Args:
-        input_size (int): The number of input features.
         hidden_size (int): The number of hidden units in the LSTM cell.
         output_size (int): The number of output features.
     
