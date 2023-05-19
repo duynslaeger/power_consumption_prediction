@@ -168,26 +168,27 @@ class LSTM:
         x_t (numpy array): the input for the current time step
 
         Returns:
-        h_t (numpy array): the hidden state output for the current time step
-        self.c_t (numpy array):
+        cache : tuple containing : (concat, cprev, gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate)
         """
 
         concat = np.vstack((x_t, copy.deepcopy(self.h_t)))
 
-        gate_inputs = np.dot(self.W_gates["input"], concat) + self.b_gates["input"]
-
         gate_forgets = np.dot(self.W_gates["forget"], concat) + self.b_gates["forget"]
+        gate_inputs = np.dot(self.W_gates["input"], concat) + self.b_gates["input"]
         gate_outputs = np.dot(self.W_gates["output"], concat) + self.b_gates["output"]
         
         # Apply the sigmoid activation function to the gate values
-        i_t = self.sigmoid(gate_inputs)
         f_t = self.sigmoid(gate_forgets)
+        i_t = self.sigmoid(gate_inputs)
         o_t = self.sigmoid(gate_outputs)
         
         # Compute the candidate values
         candidate = np.dot(self.W_candidate, concat) + self.b_candidate
         c_candidate = np.tanh(candidate)
+
+        # Keeps a copy of the cell state for next interation
         cprev = copy.deepcopy(self.c_t)
+
         # Compute the current cell state
         self.c_t = f_t * self.c_t + i_t * c_candidate
         
