@@ -217,11 +217,6 @@ class LSTM:
         # Compute the derivatives of the candidate cell state and the input, forget, and output gates
         do_t = dh_t * np.tanh(self.c_t)  * self.dsigmoid(gate_outputs)
 
-        #Right expression 
-        #df_t = dc_t * cprev * self.dsigmoid(gate_forgets)
-        #di_t = dc_t * c_candidate * self.dsigmoid(gate_inputs)
-        #dc_candidate = dc_t * i_t
-
         dc_candidate = dc_t * i_t
         df_t = dc_t * cprev * self.dsigmoid(gate_forgets)
         di_t = dc_t * c_candidate * self.dsigmoid(gate_inputs)
@@ -246,7 +241,7 @@ class LSTM:
     def update(self, learning_rate, optimizer=None):
         if optimizer is None:
             for gate in ["input", "output", "forget"]:
-                self.W_gates[gate] -= learning_rate * self.dW_gates[gate] # Est-on sur du -= ? J'aurai tendance à plutôt mettre +=
+                self.W_gates[gate] -= learning_rate * self.dW_gates[gate]
                 self.b_gates[gate] -= learning_rate * self.db_gates[gate]
 
             self.W_candidate -= learning_rate * self.dW_candidate
