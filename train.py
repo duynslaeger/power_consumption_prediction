@@ -75,7 +75,7 @@ def train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, lear
         return lstm, predictions, train_loss_list
 
 
-def preprocess_sequential_data(file_path, sequence_length, predict_size, train_ratio=0.8, validation_ratio=0.1, power = 'p_cons'):
+def preprocess_sequential_data(file_path, sequence_length, predict_size, train_ratio=0.6, validation_ratio=0.2, power = 'p_cons'):
     # Read the dataset
     dataset = pd.read_csv(file_path, usecols=['ts', power], index_col='ts', parse_dates=['ts'])
     dataset = dataset.dropna()
