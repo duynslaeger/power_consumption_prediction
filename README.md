@@ -24,6 +24,11 @@ Specify the argument values by using the format `--<argument_name>=<value>`. For
 	python train.py --sequence_length=10 --predict_size=3 --file_path=Data/CDB002.csv
 	python predict.py --sequence_length=10 --predict_size=3 --file_path=Data/CDB002.csv --parameters_file_path=weights_biases.txt
 
+Or, if you want to run the code with all default parameters, you can simply do :
+
+	python train.py 
+	python predict.py
+
 
 ## Requirements : 
 
