@@ -28,8 +28,8 @@ Specify the argument values by using the format `--<argument_name>=<value>`. For
 ## Requirements : 
 
 The code requires the libraries :
-	- numpy==1.21.0
-	- pandas==1.3.0
-	- matplotlib==3.4.3
+	- `numpy==1.21.0`
+	- `pandas==1.3.0`
+	- `matplotlib==3.4.3`
 
 These can be dowloaded from the 'requirement.txt' file.
