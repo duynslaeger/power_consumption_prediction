@@ -9,8 +9,6 @@ def train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_ep
     train_loss_list = []
     val_loss_list = []
 
-    
-
     for epoch in range(num_epochs):
         predictions = []
         for s in range(sequence_length):
@@ -18,27 +16,31 @@ def train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_ep
         train_loss = 0.0
         val_loss = 0.0
 
-        for i in range(len(data_train) - sequence_length - predict_size):
-            # Get the input and target for this iteration
+        for i in range(0, len(data_train) - sequence_length - predict_size, predict_size):
+            # Get the target for this iteration
             y_t = data_train[i]
             
             for j in range(sequence_length):
+                # Reset the gradient to prevent the error to propagate
                 lstm.reset()
+
+                # Select the data that will feed the lstm cell
                 x_t = predictions[i+j]
 
-                # Forward pass
+                # Forward propagation
                 cache = lstm.forward(x_t)
 
-                # Compute the loss and its gradient MSE
+                # Compute the derivative of the loss, i.e the MSE
                 dloss = 2 * (lstm.h_t - y_t)
 
-                # Backward pass
+                # Backward propagation
                 lstm.backward(dloss, x_t, cache)
 
                 # Update the weights
                 lstm.update(learning_rate, lstm.optimizer)
 
             for s in range(predict_size):
+                # Once the lstm has been fed, append the predicted values
                 predictions.append(lstm.h_t[s])
 
             loss = (lstm.h_t - y_t) ** 2

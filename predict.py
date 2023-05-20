@@ -90,7 +90,7 @@ if __name__ == '__main__':
     predictions = data_test[:sequence_length].tolist()
 
     # Make predictions on the test set
-    for i in range(len(data_test) - sequence_length - predict_size):
+    for i in range(0, len(data_train) - sequence_length - predict_size, predict_size):
         for j in range(sequence_length):
             x_t = predictions[i+j]
         
