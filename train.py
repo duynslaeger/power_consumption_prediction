@@ -57,12 +57,12 @@ def train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, lear
 
 
 
-        if epoch % 10 == 0:
-            if compute_validation:
-                print("Epoch", epoch, "training loss", train_loss.flatten() / len(data_train), "Validation loss",
-                      val_loss.flatten() / len(input_test))
-            else:
-                print("Epoch", epoch, "training loss", train_loss.flatten() / len(data_train))
+        
+        if compute_validation:
+            print("Epoch", epoch, "- Training loss =", train_loss.flatten() / len(data_train), "Validation loss = ",
+                  val_loss.flatten() / len(input_test))
+        else:
+            print("Epoch", epoch, "- Training loss =", train_loss.flatten() / len(data_train))
 
         # Add the loss values to their respective lists for plotting
         train_loss_list.append(train_loss.flatten() / len(data_train))
@@ -133,9 +133,10 @@ def write_weights_biases_to_file(lstm, file_path):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--seq_len', type=int, default=5, help='Length of the sequence')
-    parser.add_argument('--pred_size', type=int, default=1, help='Size of the prediction')
-    parser.add_argument('--file_path', type=str, default='Data/CDB002.csv', help='Path to the file')
+    parser.add_argument('--seq_len', type=int, default=5)
+    parser.add_argument('--pred_size', type=int, default=1)
+    parser.add_argument('--file_path', type=str, default='Data/CDB002.csv')
+    parser.add_argument('--epoch', type=int, default=10)
 
     args = parser.parse_args()
 
@@ -145,7 +146,7 @@ if __name__ == '__main__':
     predict_size = args.pred_size
     # The path of the file you want to predict from
     file_path = args.file_path
-
+    num_epochs = args.epoch
 
 
 
@@ -156,13 +157,11 @@ if __name__ == '__main__':
 
     # Set up the LSTM
     lstm = LSTM(hidden_size=predict_size)
-
-    # Train the LSTM
-    num_epochs = 10
+    
     #Set up for a non adam optimizer
     learning_rate = 0.001
 
-    #training
+    # Training
     # lstm, predictions, train_loss_list, val_loss_list = train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=True)
     lstm, predictions, train_loss_list = train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False)
 

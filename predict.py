@@ -66,7 +66,6 @@ if __name__ == '__main__':
     lstm = LSTM(hidden_size=predict_size)
     # Assign the weights and biases
     assign_weights_biases(lstm, weights_biases)
-    print(lstm.W_gates["input"])
 
     # Pre-process the data
     data_train, data_test = preprocess_sequential_data('Data/CDB002.csv', sequence_length, predict_size)
@@ -90,7 +89,6 @@ if __name__ == '__main__':
 
     predictions = data_test[:sequence_length].tolist()
 
-    print(predictions)
     # Make predictions on the test set
     for i in range(len(data_test) - sequence_length - predict_size):
         for j in range(sequence_length):
@@ -101,7 +99,6 @@ if __name__ == '__main__':
         for n in range(predict_size):
             predictions.append(lstm.h_t[n])
 
-    print(predictions)
 
     # Plot the predictions against the actual values
     plt.plot(data_test[sequence_length:], label='Expected value')

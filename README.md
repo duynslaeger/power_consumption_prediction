@@ -9,6 +9,8 @@ The available arguments for train.py are:
 - `--seq_len`: Length of the sequence on which the model base its prediction (i.e size of the sliding window) (default: 5)
 - `--pred_size`: Number of values predicted per iteration (default: 1)
 - `--file_path`: Path to the file containing the data used for training the model (default: Data/CDB002.csv)
+- `--epoch`: Number of epochs of the training (default: 10)
+
 
 The available arguments for predict.py are:
 

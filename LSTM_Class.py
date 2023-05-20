@@ -89,10 +89,10 @@ class LSTM:
         
         # Initialize biases with positive forget bias
         self.b_gates = {}
-        self.b_gates["input"] = np.random.randn(hidden_size, 1)
-        self.b_gates["output"] = np.random.randn(hidden_size, 1)
-        self.b_gates["forget"] = np.random.randn(hidden_size, 1)  # Initialized with positive values
-        self.b_candidate = np.random.randn(hidden_size, 1)
+        self.b_gates["input"] = np.zeros((hidden_size, 1))
+        self.b_gates["output"] = np.zeros((hidden_size, 1))
+        self.b_gates["forget"] = np.zeros((hidden_size, 1))  # Initialized with positive values
+        self.b_candidate = np.zeros((hidden_size, 1))
         
         # Rest of the code remains the same
         self.c_t = np.zeros((hidden_size, 1))
@@ -241,11 +241,11 @@ class LSTM:
         Réinitialise les gradients des poids et des biais à zéro.
         """
         # Initialize biases with positive forget bias
-        self.b_gates = {}
-        self.b_gates["input"] = np.zeros((self.hidden_size, 1))
-        self.b_gates["output"] = np.zeros((self.hidden_size, 1))
-        self.b_gates["forget"] = np.zeros((self.hidden_size, 1))  # Initialized with positive values
-        self.b_candidate = np.zeros((self.hidden_size, 1))
+        # self.b_gates = {}
+        # self.b_gates["input"] = np.zeros((self.hidden_size, 1))
+        # self.b_gates["output"] = np.zeros((self.hidden_size, 1))
+        # self.b_gates["forget"] = np.zeros((self.hidden_size, 1))  # Initialized with positive values
+        # self.b_candidate = np.zeros((self.hidden_size, 1))
 
         self.dW_gates = {
             "input": np.zeros_like(self.W_gates["input"]),

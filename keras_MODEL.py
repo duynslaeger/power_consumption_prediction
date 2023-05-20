@@ -43,7 +43,7 @@ testGenerator = TimeseriesGenerator(dataset_scaled[size:].to_numpy(), dataset_sc
 
 model = Sequential()
 model.add(InputLayer(input_shape=(seq_len, 1)))
-model.add(LSTM(units=3000))
+model.add(LSTM(units=1))
 model.add(Dense(units=1))
 model.compile(optimizer='adam', loss='mae')
 
