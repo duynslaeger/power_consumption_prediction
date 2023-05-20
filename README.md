@@ -6,15 +6,15 @@ Two scripts can be ran. The "train.py" trains the model while the "predict.py" m
 
 The available arguments for train.py are:
 
-- `--seq_len`: Length of the sequence on which the model base its prediction (default: 5)
-- `--pred_size`: Size of the prediction (i.e number of values predicted in one go) (default: 1)
-- `--file_path`: Path to the file (default: Data/CDB002.csv)
+- `--seq_len`: Length of the sequence on which the model base its prediction (i.e size of the sliding window) (default: 5)
+- `--pred_size`: Number of values predicted per iteration (default: 1)
+- `--file_path`: Path to the file containing the data used for training the model (default: Data/CDB002.csv)
 
 The available arguments for predict.py are:
 
-- `--seq_len`: Length of the sequence on which the model base its prediction (default: 5)
-- `--pred_size`: Size of the prediction (i.e number of values predicted in one go) (default: 1)
-- `--file_path`: Path to the file (default: Data/CDB002.csv)
+- `--seq_len`: Length of the sequence on which the model base its prediction (i.e size of the sliding window) (default: 5)
+- `--pred_size`: Number of values predicted per iteration (default: 1)
+- `--file_path`: Path to the file containing the data used for testing the model (default: Data/CDB002.csv)
 - `--parameters_file_path`: Path to the txt file containing the trained weights and biases (default: Saved_parameters/weights_biases.txt).
 
 ATTENTION : Pay attention that for a prediction, the parameters_file_path you use should have be trained with the same "seq_len" and "predict_size" you use for the prediction.
