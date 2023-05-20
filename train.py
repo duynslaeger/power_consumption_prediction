@@ -3,14 +3,18 @@ import numpy as np
 import pandas as pd
 import copy
 import matplotlib.pyplot as plt
+import argparse
 
-def train_lstm(lstm, data_train, data_test, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False):
+def train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False):
     train_loss_list = []
     val_loss_list = []
 
-    predictions = data_train[:sequence_length]
+    
 
     for epoch in range(num_epochs):
+        predictions = []
+        for s in range(sequence_length):
+            predictions.append(np.array(data_train[s]))
         train_loss = 0.0
         val_loss = 0.0
 
@@ -34,7 +38,9 @@ def train_lstm(lstm, data_train, data_test, sequence_length, predict_size, num_e
                 # Update the weights
                 lstm.update(learning_rate, lstm.optimizer)
 
-            #TO DO : append le résultat dans le predictions
+            for s in range(predict_size):
+                predictions.append(lstm.h_t[s])
+
             loss = (lstm.h_t - y_t) ** 2
             train_loss += loss
 
@@ -49,8 +55,10 @@ def train_lstm(lstm, data_train, data_test, sequence_length, predict_size, num_e
 
                 val_loss += (lstm_copy.h_t - y_expected) ** 2
 
+
+
         if epoch % 10 == 0:
-            if perform_predictions:
+            if compute_validation:
                 print("Epoch", epoch, "training loss", train_loss.flatten() / len(data_train), "Validation loss",
                       val_loss.flatten() / len(input_test))
             else:
@@ -58,13 +66,13 @@ def train_lstm(lstm, data_train, data_test, sequence_length, predict_size, num_e
 
         # Add the loss values to their respective lists for plotting
         train_loss_list.append(train_loss.flatten() / len(data_train))
-        if perform_predictions:
+        if compute_validation:
             val_loss_list.append(val_loss.flatten() / len(input_test))
 
     if compute_validation:
-        return lstm, train_loss_list, val_loss_list
+        return lstm, predictions, train_loss_list, val_loss_list
     else:
-        return lstm, train_loss_list
+        return lstm, predictions, train_loss_list
 
 
 def preprocess_sequential_data(file_path, sequence_length, predict_size, train_ratio=0.8, power = 'p_cons'):
@@ -72,7 +80,7 @@ def preprocess_sequential_data(file_path, sequence_length, predict_size, train_r
     dataset = pd.read_csv(file_path, usecols=['ts', power], index_col='ts', parse_dates=['ts'])
     dataset = dataset.dropna()
 
-    input_data = copy.copy(dataset[power])
+    input_data = dataset[power].to_numpy()
 
     # Normalize the data using min-max normalization
     input_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
@@ -87,23 +95,84 @@ def preprocess_sequential_data(file_path, sequence_length, predict_size, train_r
     return data_train, data_test
 
 
+def write_weights_biases_to_file(lstm, file_path):
+    """
+    Saves the weights and biases on a txt file
+    """
+    with open(file_path, "w") as file:
+        # Write the values of the weights
+        file.write("W_gates[input]:\n")
+        file.write(str(lstm.W_gates["input"]) + "\n")
 
-#The number of time data you want to use for the prediction
-sequence_length = 1
+        file.write("W_gates[output]:\n")
+        file.write(str(lstm.W_gates["output"]) + "\n")
 
-#You also need to choose the prediction size which should be the same as the hidden size.
-predict_size = 3
+        file.write("W_gates[forget]:\n")
+        file.write(str(lstm.W_gates["forget"]) + "\n")
 
-#Preprocess
-data_train, data_test = preprocess_sequential_data('CDB002.csv', sequence_length, predict_size)
+        file.write("W_candidate:\n")
+        file.write(str(lstm.W_candidate) + "\n")
 
-# Set up the LSTM
-lstm = LSTM(hidden_size=predict_size)
+        # Write the values of the biases
+        file.write("b_gates[input]:\n")
+        file.write(str(lstm.b_gates["input"]) + "\n")
 
-# Train the LSTM
-num_epochs = 30
-#Set up for a non adam optimizer
-learning_rate = 0.001
+        file.write("b_gates[output]:\n")
+        file.write(str(lstm.b_gates["output"]) + "\n")
 
-#training
-lstm, train_loss_list, val_loss_list = train_lstm(lstm, data_train, data_test, sequence_length, predict_size, num_epochs, learning_rate, perform_predictions=True)
+        file.write("b_gates[forget]:\n")
+        file.write(str(lstm.b_gates["forget"]) + "\n")
+
+        file.write("b_candidate:\n")
+        file.write(str(lstm.b_candidate) + "\n")
+
+    print("Weights and biases saved to file:", file_path)
+
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--seq_len', type=int, default=5, help='Length of the sequence')
+    parser.add_argument('--pred_size', type=int, default=1, help='Size of the prediction')
+    parser.add_argument('--file_path', type=str, default='Data/CDB002.csv', help='Path to the file')
+
+    args = parser.parse_args()
+
+    # The number of time data you want to use for the prediction
+    sequence_length = args.seq_len
+    # You also need to choose the prediction size which should be the same as the hidden size.
+    predict_size = args.pred_size
+    # The path of the file you want to predict from
+    file_path = args.file_path
+
+
+
+
+    #Preprocess
+    data_train, data_test = preprocess_sequential_data(file_path, sequence_length, predict_size)
+    plt.plot(data_train[sequence_length:], label='Expected value')
+    plt.show()
+
+    # Set up the LSTM
+    lstm = LSTM(hidden_size=predict_size)
+
+    # Train the LSTM
+    num_epochs = 10
+    #Set up for a non adam optimizer
+    learning_rate = 0.001
+
+    #training
+    # lstm, predictions, train_loss_list, val_loss_list = train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=True)
+    lstm, predictions, train_loss_list = train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False)
+
+
+    # Path to the output file
+    param_file_path = "weights_biases.txt"  
+    write_weights_biases_to_file(lstm, param_file_path)
+
+    plt.plot(data_train, label='Expected value')
+    plt.plot(predictions, label='Predictions on training data')
+    plt.legend()
+    plt.show()
+

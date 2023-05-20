@@ -89,10 +89,10 @@ class LSTM:
         
         # Initialize biases with positive forget bias
         self.b_gates = {}
-        self.b_gates["input"] = np.zeros((hidden_size, 1))
-        self.b_gates["output"] = np.zeros((hidden_size, 1))
-        self.b_gates["forget"] = np.zeros((hidden_size, 1))  # Initialized with positive values
-        self.b_candidate = np.zeros((hidden_size, 1))
+        self.b_gates["input"] = np.random.randn(hidden_size, 1)
+        self.b_gates["output"] = np.random.randn(hidden_size, 1)
+        self.b_gates["forget"] = np.random.randn(hidden_size, 1)  # Initialized with positive values
+        self.b_candidate = np.random.randn(hidden_size, 1)
         
         # Rest of the code remains the same
         self.c_t = np.zeros((hidden_size, 1))
@@ -149,6 +149,7 @@ class LSTM:
         """
 
         concat = np.vstack((x_t, copy.deepcopy(self.h_t)))
+        # print(concat)
 
         gate_forgets = np.dot(self.W_gates["forget"], concat) + self.b_gates["forget"]
         gate_inputs = np.dot(self.W_gates["input"], concat) + self.b_gates["input"]
@@ -171,6 +172,9 @@ class LSTM:
         
         # Compute the current hidden state
         self.h_t = o_t * np.tanh(self.c_t)
+        # print(o_t)
+        # print("c_t\t" + str(self.c_t))
+        # print("h_t\t" + str(self.h_t))
 
         cache = (concat, cprev, gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate)
         
