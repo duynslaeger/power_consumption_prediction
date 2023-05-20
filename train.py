@@ -5,7 +5,7 @@ import copy
 import matplotlib.pyplot as plt
 import argparse
 
-def train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False):
+def train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False):
     train_loss_list = []
     val_loss_list = []
 
@@ -21,9 +21,9 @@ def train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, lear
         for i in range(len(data_train) - sequence_length - predict_size):
             # Get the input and target for this iteration
             y_t = data_train[i]
-            lstm.reset()
+            
             for j in range(sequence_length):
-                
+                lstm.reset()
                 x_t = predictions[i+j]
 
                 # Forward pass
@@ -47,10 +47,10 @@ def train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, lear
         if compute_validation:
             # Make predictions on the test set
             lstm_copy = copy.deepcopy(lstm)
-            for i in range(len(data_train) - sequence_length - predict_size):
-                y_expected = data_train[i+sequence_length]
+            for i in range(len(data_val) - sequence_length - predict_size):
+                y_expected = data_val[i+sequence_length]
                 for j in range(sequence_length):
-                    x_t = data_train[i+j]
+                    x_t = data_val[i+j]
                     lstm_copy.forward(x_t)
 
                 val_loss += (lstm_copy.h_t - y_expected) ** 2
@@ -60,14 +60,14 @@ def train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, lear
         
         if compute_validation:
             print("Epoch", epoch, "- Training loss =", train_loss.flatten() / len(data_train), "Validation loss = ",
-                  val_loss.flatten() / len(input_test))
+                  val_loss.flatten() / len(data_val))
         else:
             print("Epoch", epoch, "- Training loss =", train_loss.flatten() / len(data_train))
 
         # Add the loss values to their respective lists for plotting
         train_loss_list.append(train_loss.flatten() / len(data_train))
         if compute_validation:
-            val_loss_list.append(val_loss.flatten() / len(input_test))
+            val_loss_list.append(val_loss.flatten() / len(data_val))
 
     if compute_validation:
         return lstm, predictions, train_loss_list, val_loss_list
@@ -164,8 +164,8 @@ if __name__ == '__main__':
     learning_rate = 0.001
 
     # Training
-    # lstm, predictions, train_loss_list, val_loss_list = train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=True)
-    lstm, predictions, train_loss_list = train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False)
+    lstm, predictions, train_loss_list, val_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=True)
+    # lstm, predictions, train_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False)
 
 
     # Path to the output file
