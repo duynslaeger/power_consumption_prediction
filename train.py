@@ -75,7 +75,7 @@ def train_lstm(lstm, data_train, sequence_length, predict_size, num_epochs, lear
         return lstm, predictions, train_loss_list
 
 
-def preprocess_sequential_data(file_path, sequence_length, predict_size, train_ratio=0.8, power = 'p_cons'):
+def preprocess_sequential_data(file_path, sequence_length, predict_size, train_ratio=0.8, validation_ratio=0.1, power = 'p_cons'):
     # Read the dataset
     dataset = pd.read_csv(file_path, usecols=['ts', power], index_col='ts', parse_dates=['ts'])
     dataset = dataset.dropna()
@@ -88,11 +88,13 @@ def preprocess_sequential_data(file_path, sequence_length, predict_size, train_r
     # Split the data into training and testing sets
     num_samples = len(input_data)
     num_training_samples = int(num_samples * train_ratio)
+    num_val_samples = int(num_samples * (train_ratio + validation_ratio))
 
     data_train = input_data[:num_training_samples]
-    data_test = input_data[num_training_samples:]
+    data_val = input_data[num_training_samples:num_val_samples]
+    data_test = input_data[num_val_samples:]
 
-    return data_train, data_test
+    return data_train, data_val, data_test
 
 
 def write_weights_biases_to_file(lstm, file_path):
@@ -151,7 +153,7 @@ if __name__ == '__main__':
 
 
     #Preprocess
-    data_train, data_test = preprocess_sequential_data(file_path, sequence_length, predict_size)
+    data_train, data_val, data_test = preprocess_sequential_data(file_path, sequence_length, predict_size)
     plt.plot(data_train[sequence_length:], label='Expected value')
     plt.show()
 

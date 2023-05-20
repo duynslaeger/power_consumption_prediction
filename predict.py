@@ -68,7 +68,7 @@ if __name__ == '__main__':
     assign_weights_biases(lstm, weights_biases)
 
     # Pre-process the data
-    data_train, data_test = preprocess_sequential_data('Data/CDB002.csv', sequence_length, predict_size)
+    data_train, data_val, data_test = preprocess_sequential_data('Data/CDB002.csv', sequence_length, predict_size)
 
     # TEST TEST TEST with DataTrain
 
