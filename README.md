@@ -17,7 +17,7 @@ The available arguments for predict.py are:
 - `--file_path`: Path to the file containing the data used for testing the model (default: Data/CDB002.csv)
 - `--parameters_file_path`: Path to the txt file containing the trained weights and biases (default: Saved_parameters/weights_biases.txt).
 
-ATTENTION : Pay attention that for a prediction, the parameters_file_path you use should have be trained with the same "seq_len" and "predict_size" you use for the prediction.
+ATTENTION : Pay attention that for a prediction, the parameters_file_path you use should have be trained with the same "seq_len" and "pred_size" you are using for the prediction.
 
 Specify the argument values by using the format `--<argument_name>=<value>`. For example:
 
