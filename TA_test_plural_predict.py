@@ -256,12 +256,6 @@ class LSTM:
         self.dW_candidate = np.zeros_like(self.W_candidate)
         self.db_candidate = np.zeros_like(self.b_candidate)
 
-
-
-
-
-
-
         
 
 def train_lstm(lstm, input_train, target_train, input_test, target_test, num_epochs, learning_rate, perform_predictions=True):
@@ -282,7 +276,6 @@ def train_lstm(lstm, input_train, target_train, input_test, target_test, num_epo
 
                 # Forward pass
                 cache = lstm.forward(x_t)
-                print(lstm.h_t)
 
                 # Compute the loss and its gradient MSE
                 dloss = 2 * (lstm.h_t - y_t)
@@ -348,6 +341,7 @@ def preprocess_data(file_path, sequence_length, predict_size, train_ratio=0.8, p
     num_training_samples = int(num_samples * train_ratio)
 
     input_train = input_data[:num_training_samples]
+    print(input_train)
     target_train = target_data[:num_training_samples]
     input_test = input_data[num_training_samples:]
     target_test = target_data[num_training_samples:]
@@ -364,7 +358,7 @@ sequence_length = 1
 predict_size = 3
 
 #Preprocess
-input_train, target_train, input_test, target_test = preprocess_data('Data/CDB002.csv', sequence_length, predict_size)
+input_train, target_train, input_test, target_test = preprocess_data('CDB002.csv', sequence_length, predict_size)
 
 # Set up the LSTM
 lstm = LSTM(hidden_size=predict_size)
