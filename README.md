@@ -9,29 +9,29 @@
                         
                            PROJECT ROOT
 
-|-- Data/                            # Contains all datas 
-|    |-- settings.py                 # Defines Global Settings
-|    |-- wsgi.py                     # Start the app in production
-|    |-- urls.py                     # Define URLs served by all apps/nodes
+	|-- Data/                            # Contains all datas 
+	|    |-- settings.py                 # Defines Global Settings
+	|    |-- wsgi.py                     # Start the app in production
+	|    |-- urls.py                     # Define URLs served by all apps/nodes
 
-|-- Saved_parameters/                # Contains the weights_biases
-|    |
-|    |-- home/
+	|-- Saved_parameters/                # Contains the weights_biases
+	|    |
+	|    |-- home/
 
-|-- long_term_prediction/
-|         |      
-|         |-- Saved_parameters/ 
+	|-- long_term_prediction/
+	|         |      
+	|         |-- Saved_parameters/ 
 
-|-- Keras_MODEL.ipynb
+	|-- Keras_MODEL.ipynb
 
-|-- LSTM_Class.py                     # Declaration of LSTM class
+	|-- LSTM_Class.py                     # Declaration of LSTM class
 
-|-- requirements.txt                  # Packages
+	|-- requirements.txt                  # Packages
 
-|-- short_term_predict.py             # LSTM to predict a short sequence
-|-- short_term_train.py               # LSTM to train a short sequence
+	|-- short_term_predict.py             # LSTM to predict a short sequence
+	|-- short_term_train.py               # LSTM to train a short sequence
 
-|-- ************************************************************************
+	|-- ************************************************************************
 
 ## Code Execution Guide
 
