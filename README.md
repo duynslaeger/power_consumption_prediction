@@ -8,7 +8,7 @@
 
 
 
-						   PROJECT ROOT
+						         PROJECT ROOT
 
 			|-- Data/                             # Contains all datas 
 			|    |-- settings.py                  # Defines Global Settings
