@@ -15,12 +15,12 @@
 			|    |-- CDB001.py                    # An example of file
 			|                      
 
-			|-- Saved_parameters/                 # Contains the weights and biases obtains after LSTM's train
+			|-- Saved_parameters/                 # Contains weights and biases obtains after training
 			|    |
 			|    
 			|-- long_term_prediction/             # LSTM for future prediction
 			|         |      
-			|         |-- Saved_parameters/       # Contains the weights and biases obtains after LSTM's train
+			|         |-- Saved_parameters/       # Contains weights and biases obtains after training
 
 			|-- Keras_MODEL.ipynb                 # Keras based LSTM 
 
