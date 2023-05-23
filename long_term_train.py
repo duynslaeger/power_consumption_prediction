@@ -9,23 +9,27 @@ def train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_ep
     train_loss_list = []
     val_loss_list = []
 
+
     for epoch in range(num_epochs):
-        predictions = []
+        train_predictions = []
+        val_predictions = []
         for s in range(sequence_length):
-            predictions.append(np.array(data_train[s]))
+            train_predictions.append(np.array(data_train[s]))
+            val_predictions.append(np.array(data_val[s]))
         train_loss = 0.0
         val_loss = 0.0
 
         for i in range(0, len(data_train) - sequence_length - predict_size, predict_size):
-            # Get the target for this iteration
-            y_t = data_train[i]
             
             for j in range(sequence_length):
                 # Reset the gradient to prevent the error to propagate
                 lstm.reset()
 
+                # Get the target for this iteration
+                y_t = data_train[i+j+1]
+
                 # Select the data that will feed the lstm cell
-                x_t = predictions[i+j]
+                x_t = train_predictions[i+j]
 
                 # Forward propagation
                 cache = lstm.forward(x_t)
@@ -41,23 +45,27 @@ def train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_ep
 
             for s in range(predict_size):
                 # Once the lstm has been fed, append the predicted values
-                predictions.append(lstm.h_t[s])
+                train_predictions.append(lstm.h_t[s])
 
             loss = (lstm.h_t - y_t) ** 2
             train_loss += loss
 
+        # If wanted, computes the validation loss of the long term prediction
         if compute_validation:
-            # Make predictions on the test set
+            # Make predictions on the validation set
             lstm_copy = copy.deepcopy(lstm)
-            for i in range(len(data_val) - sequence_length - predict_size):
+            for i in range(0, len(data_val) - sequence_length - predict_size, predict_size):
+
                 y_expected = data_val[i+sequence_length]
+
                 for j in range(sequence_length):
-                    x_t = data_val[i+j]
+                    x_t = val_predictions[i+j]
                     lstm_copy.forward(x_t)
 
+                for s in range(predict_size):
+                    val_predictions.append(lstm_copy.h_t[s])
+
                 val_loss += (lstm_copy.h_t - y_expected) ** 2
-
-
 
         
         if compute_validation:
@@ -72,9 +80,9 @@ def train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_ep
             val_loss_list.append(val_loss.flatten() / len(data_val))
 
     if compute_validation:
-        return lstm, predictions, train_loss_list, val_loss_list
+        return lstm, train_predictions, val_predictions, train_loss_list, val_loss_list
     else:
-        return lstm, predictions, train_loss_list
+        return lstm, train_predictions, train_loss_list
 
 
 def preprocess_sequential_data(file_path, sequence_length, predict_size, train_ratio=0.6, validation_ratio=0.2, power = 'p_cons'):
@@ -156,8 +164,6 @@ if __name__ == '__main__':
 
     #Preprocess
     data_train, data_val, data_test = preprocess_sequential_data(file_path, sequence_length, predict_size)
-    plt.plot(data_train[sequence_length:], label='Expected value')
-    plt.show()
 
     # Set up the LSTM
     lstm = LSTM(hidden_size=predict_size)
@@ -166,16 +172,29 @@ if __name__ == '__main__':
     learning_rate = 0.001
 
     # Training
-    lstm, predictions, train_loss_list, val_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=True)
-    # lstm, predictions, train_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False)
+    # lstm, train_predictions, val_predictions, train_loss_list, val_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=True)
+    lstm, predictions, train_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False)
 
 
-    # Path to the output file
-    param_file_path = "weights_biases.txt"  
+    # Path to the file wheree the trained parameters are written
+    param_file_path = "Saved_parameters/long_term/weights_biases.txt"  
     write_weights_biases_to_file(lstm, param_file_path)
 
+
+    plt.plot(range(num_epochs), train_loss_list, label="Training loss")
+    plt.plot(range(num_epochs), val_loss_list, label="Validation loss")
+    plt.legend()
+    plt.show()
+
+
     plt.plot(data_train, label='Expected value')
-    plt.plot(predictions, label='Predictions on training data')
+    plt.plot(train_predictions, label='Predictions on training set')
+    plt.legend()
+    plt.show()
+
+    print(val_predictions)
+    plt.plot(data_val, label='Expected value')
+    plt.plot(val_predictions, label='Predictions on validation set')
     plt.legend()
     plt.show()
 

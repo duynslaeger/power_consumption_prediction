@@ -1,5 +1,5 @@
 from LSTM_Class import *
-from train import preprocess_sequential_data
+from long_term_train import preprocess_sequential_data
 import numpy as np
 import pandas as pd
 import copy
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     parser.add_argument('--seq_len', type=int, default=5, help='Length of the sequence')
     parser.add_argument('--pred_size', type=int, default=1, help='Size of the prediction')
     parser.add_argument('--file_path', type=str, default='Data/CDB002.csv', help='Path to the file')
-    parser.add_argument('--parameters_file_path', type=str, default='Saved_parameters/weights_biases.txt', help='Path to the text file')
+    parser.add_argument('--parameters_file_path', type=str, default='Saved_parameters/long_term/weights_biases.txt', help='Path to the text file')
 
     args = parser.parse_args()
 
@@ -70,27 +70,10 @@ if __name__ == '__main__':
     # Pre-process the data
     data_train, data_val, data_test = preprocess_sequential_data('Data/CDB002.csv', sequence_length, predict_size)
 
-    # TEST TEST TEST with DataTrain
-
-    # predictions = data_train[:sequence_length].tolist()
-
-    # print(predictions)
-    # # Make predictions on the test set
-    # for i in range(len(data_train) - sequence_length - predict_size):
-    #     for j in range(sequence_length):
-    #         x_t = predictions[i+j]
-        
-    #         cache = lstm.forward(x_t)
-
-    #     for n in range(predict_size):
-    #         predictions.append(lstm.h_t[n])
-
-    # print(predictions)
-
     predictions = data_test[:sequence_length].tolist()
 
     # Make predictions on the test set
-    for i in range(0, len(data_train) - sequence_length - predict_size, predict_size):
+    for i in range(0, len(data_test) - sequence_length - predict_size, predict_size):
         for j in range(sequence_length):
             x_t = predictions[i+j]
         
