@@ -6,32 +6,30 @@
 					███████  ██████        ██         ██           ██
 
 
+						   PROJECT ROOT
 
+			|-- Data/                             # Contains all datas 
+			|    |-- settings.py                  # Defines Global Settings
+			|    |-- CDB001.py                    # An example of file
+			|                      
 
-					   PROJECT ROOT
+			|-- Saved_parameters/                 # Contains the weights and biases obtains after LSTM's train
+			|    |
+			|    
+			|-- long_term_prediction/             # LSTM for future prediction
+			|         |      
+			|         |-- Saved_parameters/       # Contains the weights and biases obtains after LSTM's train
 
-		|-- Data/                             # Contains all datas 
-		|    |-- settings.py                  # Defines Global Settings
-		|    |-- CDB001.py                    # An example of file
-		|                      
+			|-- Keras_MODEL.ipynb                 # Keras based LSTM 
 
-		|-- Saved_parameters/                 # Contains the weights and biases obtains after LSTM's train
-		|    |
-		|    
-		|-- long_term_prediction/             # LSTM for future prediction
-		|         |      
-		|         |-- Saved_parameters/       # Contains the weights and biases obtains after LSTM's train
+			|-- LSTM_Class.py                     # Declaration of LSTM class
 
-		|-- Keras_MODEL.ipynb                 # Keras based LSTM 
+			|-- requirements.txt                  # Packages
 
-		|-- LSTM_Class.py                     # Declaration of LSTM class
+			|-- short_term_predict.py             # LSTM to predict a short sequence
+			|-- short_term_train.py               # LSTM to train a short sequence
 
-		|-- requirements.txt                  # Packages
-
-		|-- short_term_predict.py             # LSTM to predict a short sequence
-		|-- short_term_train.py               # LSTM to train a short sequence
-
-		|-- ************************************************************************
+			|-- ************************************************************************
 
 ## Code Execution Guide
 
