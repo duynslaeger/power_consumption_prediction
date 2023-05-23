@@ -47,7 +47,7 @@ if __name__ == '__main__':
     parser.add_argument('--seq_len', type=int, default=5, help='Length of the sequence')
     parser.add_argument('--pred_size', type=int, default=1, help='Size of the prediction')
     parser.add_argument('--file_path', type=str, default='Data/CDB002.csv', help='Path to the file')
-    parser.add_argument('--parameters_file_path', type=str, default='Saved_parameters/long_term/weights_biases.txt', help='Path to the text file')
+    parser.add_argument('--parameters_file_path', type=str, default='Saved_parameters/weights_biases.txt', help='Path to the text file')
 
     args = parser.parse_args()
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     assign_weights_biases(lstm, weights_biases)
 
     # Pre-process the data
-    data_train, data_val, data_test = preprocess_sequential_data('Data/CDB002.csv', sequence_length, predict_size)
+    data_train, data_val, data_test = preprocess_sequential_data('../Data/CDB002.csv', sequence_length, predict_size)
 
     predictions = data_test[:sequence_length].tolist()
 
@@ -85,6 +85,8 @@ if __name__ == '__main__':
 
     # Plot the predictions against the actual values
     plt.plot(data_test[sequence_length:], label='Expected value')
-    plt.plot(predictions[sequence_length:], label='Predictions on training data')
+    plt.plot(predictions[sequence_length:], label='Predictions')
+    plt.xlabel("t [8s step]")
+    plt.ylabel("Normalized power consumption")
     plt.legend()
     plt.show()

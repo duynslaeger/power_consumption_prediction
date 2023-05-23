@@ -147,7 +147,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--seq_len', type=int, default=5)
     parser.add_argument('--pred_size', type=int, default=1)
-    parser.add_argument('--file_path', type=str, default='Data/CDB002.csv')
+    parser.add_argument('--file_path', type=str, default='../Data/CDB002.csv')
     parser.add_argument('--epoch', type=int, default=10)
 
     args = parser.parse_args()
@@ -172,12 +172,12 @@ if __name__ == '__main__':
     learning_rate = 0.001
 
     # Training
-    # lstm, train_predictions, val_predictions, train_loss_list, val_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=True)
-    lstm, predictions, train_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False)
+    lstm, train_predictions, val_predictions, train_loss_list, val_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=True)
+    # lstm, predictions, train_loss_list = train_lstm(lstm, data_train, data_val, sequence_length, predict_size, num_epochs, learning_rate, compute_validation=False)
 
 
     # Path to the file wheree the trained parameters are written
-    param_file_path = "Saved_parameters/long_term/weights_biases.txt"  
+    param_file_path = "Saved_parameters/weights_biases.txt"  
     write_weights_biases_to_file(lstm, param_file_path)
 
 
@@ -189,12 +189,16 @@ if __name__ == '__main__':
 
     plt.plot(data_train, label='Expected value')
     plt.plot(train_predictions, label='Predictions on training set')
+    plt.xlabel("t [8s step]")
+    plt.ylabel("Normalized power consumption")
     plt.legend()
     plt.show()
 
     print(val_predictions)
     plt.plot(data_val, label='Expected value')
     plt.plot(val_predictions, label='Predictions on validation set')
+    plt.xlabel("t [8s step]")
+    plt.ylabel("Normalized power consumption")
     plt.legend()
     plt.show()
 

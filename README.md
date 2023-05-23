@@ -1,21 +1,25 @@
-# Code Execution Guide
+# Structure of the folder
+
+
+
+## Code Execution Guide
 
 This guide explains how to run the Python code with command-line arguments.
 
-Two scripts can be ran. The "train.py" trains the model while the "predict.py" makes a prediction from the trained model. 
+Two scripts can be ran. The "short_term_train.py" trains the model while the "short_term_predict.py" makes a prediction from the trained model. 
 
-The available arguments for train.py are:
+The available arguments for short_term_train.py are:
 
-- `--seq_len`: Length of the sequence on which the model base its prediction (i.e size of the sliding window) (default: 5)
-- `--pred_size`: Number of values predicted per iteration (default: 1)
+- `--seq_len`: Length of the sequence on which the model base its prediction (i.e number of values used for prediction) (default: 5)
+- `--pred_size`: Number of values predicted in the same time (default: 1)
 - `--file_path`: Path to the file containing the data used for training the model (default: Data/CDB002.csv)
 - `--epoch`: Number of epochs of the training (default: 10)
 
 
-The available arguments for predict.py are:
+The available arguments for short_term_predict.py are:
 
-- `--seq_len`: Length of the sequence on which the model base its prediction (i.e size of the sliding window) (default: 5)
-- `--pred_size`: Number of values predicted per iteration (default: 1)
+- `--seq_len`: Length of the sequence on which the model base its prediction (i.e number of values used for prediction) (default: 5)
+- `--pred_size`: Number of values predicted in the same time (default: 1)
 - `--file_path`: Path to the file containing the data used for testing the model (default: Data/CDB002.csv)
 - `--parameters_file_path`: Path to the txt file containing the trained weights and biases (default: Saved_parameters/weights_biases.txt).
 
@@ -23,16 +27,16 @@ ATTENTION : Pay attention that for a prediction, the parameters_file_path you us
 
 Specify the argument values by using the format `--<argument_name>=<value>`. For example:
 
-	python train.py --sequence_length=10 --predict_size=3 --file_path=Data/CDB002.csv
-	python predict.py --sequence_length=10 --predict_size=3 --file_path=Data/CDB002.csv --parameters_file_path=weights_biases.txt
+	python short_term_train.py --sequence_length=10 --predict_size=3 --file_path=Data/CDB002.csv
+	python short_term_predict.py --sequence_length=10 --predict_size=3 --file_path=Data/CDB002.csv --parameters_file_path=weights_biases.txt
 
 Or, if you want to run the code with all default parameters, you can simply do :
 
-	python train.py 
-	python predict.py
+	python short_term_train.py 
+	python short_term_predict.py
 
 
-## Requirements : 
+### Requirements : 
 
 The code requires the libraries :
 
