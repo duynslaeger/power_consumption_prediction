@@ -10,20 +10,19 @@
 
 						           PROJECT ROOT
 
-				|-- Data/                            # Contains all datas 
-				|    |-- settings.py                 # Defines Global Settings
-				|    |-- wsgi.py                     # Start the app in production
-				|    |-- urls.py                     # Define URLs served by all apps/nodes
+				|-- Data/                             # Contains all datas 
+				|    |-- settings.py                  # Defines Global Settings
+				|    |-- CDB001.py                    # An example of file
+				|                      
 
-				|-- Saved_parameters/                # Contains the weights_biases
+				|-- Saved_parameters/                 # Contains the weights and biases obtains after LSTM's train
 				|    |
-				|    |-- home/
-
-				|-- long_term_prediction/
+				|    
+				|-- long_term_prediction/             # LSTM for future prediction
 				|         |      
-				|         |-- Saved_parameters/ 
+				|         |-- Saved_parameters/       # Contains the weights and biases obtains after LSTM's train
 
-				|-- Keras_MODEL.ipynb
+				|-- Keras_MODEL.ipynb                 # Keras based LSTM 
 
 				|-- LSTM_Class.py                     # Declaration of LSTM class
 
