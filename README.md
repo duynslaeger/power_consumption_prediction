@@ -1,38 +1,38 @@
 
-		█         ██████   ██████████    ████       ████
-		█        ██            ██         █   █   █   █
-		█         █████        ██         █    ███    █
-		█             ██       ██         █           █
-		███████  ██████        ██         █           █
+					█         ██████   ██████████    ████       ████
+					█        ██            ██         █   █   █   █
+					█         █████        ██         █    ███    █
+					█             ██       ██         █           █
+					███████  ██████        ██         █           █
 
 
 
-                        
-                           PROJECT ROOT
 
-	|-- Data/                            # Contains all datas 
-	|    |-- settings.py                 # Defines Global Settings
-	|    |-- wsgi.py                     # Start the app in production
-	|    |-- urls.py                     # Define URLs served by all apps/nodes
+						   PROJECT ROOT
 
-	|-- Saved_parameters/                # Contains the weights_biases
-	|    |
-	|    |-- home/
+				|-- Data/                            # Contains all datas 
+				|    |-- settings.py                 # Defines Global Settings
+				|    |-- wsgi.py                     # Start the app in production
+				|    |-- urls.py                     # Define URLs served by all apps/nodes
 
-	|-- long_term_prediction/
-	|         |      
-	|         |-- Saved_parameters/ 
+				|-- Saved_parameters/                # Contains the weights_biases
+				|    |
+				|    |-- home/
 
-	|-- Keras_MODEL.ipynb
+				|-- long_term_prediction/
+				|         |      
+				|         |-- Saved_parameters/ 
 
-	|-- LSTM_Class.py                     # Declaration of LSTM class
+				|-- Keras_MODEL.ipynb
 
-	|-- requirements.txt                  # Packages
+				|-- LSTM_Class.py                     # Declaration of LSTM class
 
-	|-- short_term_predict.py             # LSTM to predict a short sequence
-	|-- short_term_train.py               # LSTM to train a short sequence
+				|-- requirements.txt                  # Packages
 
-	|-- ************************************************************************
+				|-- short_term_predict.py             # LSTM to predict a short sequence
+				|-- short_term_train.py               # LSTM to train a short sequence
+
+				|-- ************************************************************************
 
 ## Code Execution Guide
 
