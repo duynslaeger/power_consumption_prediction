@@ -1,5 +1,33 @@
-# Structure of the folder
+# LSTM Project
 
+< PROJECT ROOT >   
+		|-- Data/                               # Contains all datas 
+		|    |-- settings.py                    # Defines Global Settings
+		|    |-- wsgi.py                        # Start the app in production
+		|    |-- urls.py                        # Define URLs served by all apps/nodes
+		|
+		|-- Saved_parameters/					# Contains the weughts_biases
+		|    |
+		|    |-- home/
+		|
+		|-- long_term_prediction/
+		|         |			
+		|         |-- Saved_parameters/ 
+		|
+		|         
+        |-- Keras_MODEL.ipynb
+		|
+		|-- LSTM_Class.py						 # Declaration of LSTM class
+		|
+		|-- requirements.txt                     # Packages
+		|
+		|-- short_term_predict.py                # LSTM to predict a short sequence
+		|-- short_term_train.py                  # LSTM to train a short sequence
+		|
+		|-- ************************************************************************
+
+
+## Project Structure
 
 
 ## Code Execution Guide
