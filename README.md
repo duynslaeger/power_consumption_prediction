@@ -30,7 +30,7 @@
 
 			|-- ************************************************************************
 
-## Code Execution Guide the MAin work about short term prediction in time
+## Code Execution Guide the main work about short term prediction in time
 
 To execute the project and observe the workflow, you can use the main.ipynb file. This Jupyter Notebook serves as an illustrative example of how to run the project and includes an analysis section where the trained model is utilized to make predictions and evaluate the results.
 
