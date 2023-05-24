@@ -1,34 +1,34 @@
 
-					██         ██████   ██████████   █████       ██████
-					██        ██            ██         ██  ██   ██  ██
-					██         █████        ██         ██     ██    ██
-					██            ██       ██         ██           ██
-					███████  ██████        ██         ██           ██
+				██         ██████   ██████████   █████       ██████
+				██        ██            ██         ██  ██   ██  ██
+				██         █████        ██         ██     ██    ██
+				██            ██       ██         ██           ██
+				███████  ██████        ██         ██           ██
 
 
 
 
-						         PROJECT ROOT
+						 PROJECT ROOT
 
-			|-- Data/                             	# Contains all datas 
-			|    |-- CDB001.py                    	# An example of file
-			|                      
+		|-- Data/                             	# Contains all datas 
+		|    |-- CDB001.py                    	# An example of file
+		|                      
 
-			|-- long_term_prediction/             	# LSTM for future prediction 
-			|         |      
-			|         |-- Saved_parameters/       	# Contains weights and biases obtains after training
+		|-- long_term_prediction/             	# LSTM for future prediction 
+		|         |      
+		|         |-- Saved_parameters/       	# Contains weights and biases obtains after training
 
-			|-- Keras_MODEL.ipynb                 	# Keras based LSTM 
+		|-- Keras_MODEL.ipynb                 	# Keras based LSTM 
 
-			|-- LSTM_Class.py                     	# Declaration of LSTM class
+		|-- LSTM_Class.py                     	# Declaration of LSTM class
 
-			|-- requirements.txt                  	# Packages
+		|-- requirements.txt                  	# Packages
 
-			|-- lstm_train.py             	       	# Contains the definition of the forward and reverse train
-			|-- preprocess.py                  	# LSTM to train a short sequence
-			|-- main_short_term_prediction.ipynb	# Contains an example of execution and the analysis part 
+		|-- lstm_train.py             	       	# Contains the definition of the forward and reverse train
+		|-- preprocess.py                  	# LSTM to train a short sequence
+		|-- main_short_term_prediction.ipynb	# Contains an example of execution and the analysis part 
 
-			|-- ************************************************************************
+		|-- ************************************************************************
 
 ## Code Execution Guide the main work about short term prediction in time
 
