@@ -2,10 +2,11 @@
 import numpy as np
 import pandas as pd
 import copy
+import time
 import matplotlib.pyplot as plt
 
 class AdamOptimizer:
-    def __init__(self, parameters, alpha=0.001, beta1=0.09, beta2=0.999, epsilon=1e-8):
+    def __init__(self, parameters, alpha, beta1, beta2, epsilon):
         """
         Initializes the Adam optimizer.
 
@@ -76,9 +77,14 @@ class LSTM:
 
     """
     
-    def __init__(self, hidden_size): 
-        self.input_size = 1 # Alsways equal to 1
+    def __init__(self, hidden_size, alpha=0.001, beta1=0.09, beta2=0.999, epsilon=1e-8): 
+        self.input_size = 1 
         self.hidden_size = hidden_size
+
+        self.learning_rate = alpha
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.epsilon = epsilon
 
         # Initialize weights using Xavier initialization
         self.W_gates = {}
@@ -107,9 +113,11 @@ class LSTM:
         self.db_gates["output"] = np.zeros((hidden_size, 1))
         self.db_gates["forget"] = np.zeros((hidden_size, 1))
         self.db_candidate = np.zeros((hidden_size, 1))
-        self.optimizer = AdamOptimizer(parameters=[self.W_gates["input"], self.W_gates["output"], self.W_gates["forget"], 
-                                                   self.b_gates["input"], self.b_gates["output"], self.b_gates["forget"], 
-                                                   self.W_candidate, self.b_candidate])
+        self.optimizer = AdamOptimizer([self.W_gates["input"], self.W_gates["output"], self.W_gates["forget"], 
+                                self.b_gates["input"], self.b_gates["output"], self.b_gates["forget"], 
+                                self.W_candidate, self.b_candidate],
+                                self.learning_rate, self.beta1, self.beta2, self.epsilon)
+
                                                    
     
     def sigmoid(self, x):
@@ -149,7 +157,6 @@ class LSTM:
         """
 
         concat = np.vstack((x_t, copy.deepcopy(self.h_t)))
-        # print(concat)
 
         gate_forgets = np.dot(self.W_gates["forget"], concat) + self.b_gates["forget"]
         gate_inputs = np.dot(self.W_gates["input"], concat) + self.b_gates["input"]
@@ -172,9 +179,6 @@ class LSTM:
         
         # Compute the current hidden state
         self.h_t = o_t * np.tanh(self.c_t)
-        # print(o_t)
-        # print("c_t\t" + str(self.c_t))
-        # print("h_t\t" + str(self.h_t))
 
         cache = (concat, cprev, gate_inputs, gate_forgets, gate_outputs,i_t, f_t, o_t, c_candidate)
         
@@ -241,11 +245,11 @@ class LSTM:
         Réinitialise les gradients des poids et des biais à zéro.
         """
         # Initialize biases with positive forget bias
-        # self.b_gates = {}
-        # self.b_gates["input"] = np.zeros((self.hidden_size, 1))
-        # self.b_gates["output"] = np.zeros((self.hidden_size, 1))
-        # self.b_gates["forget"] = np.zeros((self.hidden_size, 1))  # Initialized with positive values
-        # self.b_candidate = np.zeros((self.hidden_size, 1))
+        self.b_gates = {}
+        self.b_gates["input"] = np.zeros((self.hidden_size, 1))
+        self.b_gates["output"] = np.zeros((self.hidden_size, 1))
+        self.b_gates["forget"] = np.zeros((self.hidden_size, 1))  # Initialized with positive values
+        self.b_candidate = np.zeros((self.hidden_size, 1))
 
         self.dW_gates = {
             "input": np.zeros_like(self.W_gates["input"]),
