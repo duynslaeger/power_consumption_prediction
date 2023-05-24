@@ -26,11 +26,18 @@
 
 			|-- lstm_train.py             	       	# Contains the definition of the forward and reverse train
 			|-- preprocess.py                  	# LSTM to train a short sequence
-			|-- main.ipynb				# Contains an example of execution and the analysis part 
+			|-- main_short_term_prediction.ipynb				# Contains an example of execution and the analysis part 
 
 			|-- ************************************************************************
 
-## Code Execution Guide
+## Code Execution Guide the MAin work about short term prediction in time
+
+To execute the project and observe the workflow, you can use the main.ipynb file. This Jupyter Notebook serves as an illustrative example of how to run the project and includes an analysis section where the trained model is utilized to make predictions and evaluate the results.
+
+By opening the main.ipynb file in a Jupyter Notebook environment, you can follow along with the code and explanations provided. The notebook demonstrates the various steps involved in the project, such as data preprocessing, model training, and result analysis.
+
+## Code Execution Guide LSTM for future prediction 
+To execut the LSTM for future prediction 
 
 This guide explains how to run the Python code with command-line arguments.
 
