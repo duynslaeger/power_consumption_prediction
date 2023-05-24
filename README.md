@@ -26,7 +26,7 @@
 
 			|-- lstm_train.py             	       	# Contains the definition of the forward and reverse train
 			|-- preprocess.py                  	# LSTM to train a short sequence
-			|-- main_short_term_prediction.ipynb				# Contains an example of execution and the analysis part 
+			|-- main_short_term_prediction.ipynb	# Contains an example of execution and the analysis part 
 
 			|-- ************************************************************************
 
